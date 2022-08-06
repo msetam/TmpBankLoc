@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="http://localhost:5288/UserFinderService.asmx?wsdl" docRef="http://localhost:5288/UserFinderService.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="http://localhost:5288/UserFinderService.asmx" xmlns:q1="http://localhost:5288" binding="q1:UserFinderServiceSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="http://localhost:5288/UserFinderService.asmx" xmlns:q2="http://localhost:5288" binding="q2:UserFinderServiceSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+</discovery>

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "ES3"
+  },
+  "devDependencies": {
+    "@types/jquery": "3.3.33"
+  },
+  "exclude": [
+    "node_modules",
+    "wwwroot"
+  ]
+}

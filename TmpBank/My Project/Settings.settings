@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="TmpBank_ServiceHost_UserFinderService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://localhost:5288/UserFinderService.asmx</Value>
+    </Setting>
+    <Setting Name="TmpBank_DigSigService_DigitalSigService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://localhost:5288/DigitalSigService.asmx</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

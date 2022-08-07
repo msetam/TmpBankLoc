@@ -27,7 +27,7 @@ var DigitalSignatureManager = /** @class */ (function () {
         this.submitBtn = this.wrapper.querySelector("#" + this.submitBtnId);
         this.digSigAuthMethods = this.wrapper.querySelector(".-auth-method-selector");
         this.requiredInput = this.wrapper.querySelector(this.requiredInputId);
-        this.setAuthMethodsSelectedListerenrs();
+        this.setAuthMethodsSelectedListeenrs();
         this.setSubmitListener();
     };
     DigitalSignatureManager.prototype.setSubmitListener = function () {
@@ -64,7 +64,7 @@ var DigitalSignatureManager = /** @class */ (function () {
             }
         });
     };
-    DigitalSignatureManager.prototype.setAuthMethodsSelectedListerenrs = function () {
+    DigitalSignatureManager.prototype.setAuthMethodsSelectedListeenrs = function () {
         var _this = this;
         var digSigRb = this.digSigAuthMethods.querySelector(".-dig-sig-rb");
         this._isSigMethodSelected = digSigRb.checked;

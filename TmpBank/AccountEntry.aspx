@@ -52,7 +52,7 @@
                 Interval="1000"
                 WrapperId="<%# LoginWrapper_PNL.ClientID %>"
                 SubmitButtonId="<%# LoginBtn_View.ClientID %>"
-
+                RequiredInputId="<%# UserNameLogin_View.Input.ClientID %>"
                 DebugWaitTime="10000"
                 DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>" />
 

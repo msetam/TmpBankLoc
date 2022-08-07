@@ -217,6 +217,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="DigitalSigService.asmx" />
+    <Content Include="Global.asax" />
     <Content Include="UserFinderService.asmx" />
     <Content Include="Web.config" />
   </ItemGroup>
@@ -224,6 +225,9 @@
     <Compile Include="DigitalSigService.asmx.vb">
       <DependentUpon>DigitalSigService.asmx</DependentUpon>
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Global.asax.vb">
+      <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Interfaces\IUserFinder.vb" />
     <Compile Include="Logic\UserActions.vb" />

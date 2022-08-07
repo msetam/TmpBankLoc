@@ -26,31 +26,28 @@
         Public Property DisableDefaultMarkup() As Boolean = False
         Public Property LoginOptions() As String() = {}
         Public Property Interval() As Integer
-
         Public Property WrapperId() As String
         Public Property SubmitButtonId As String
         Public Property DebugWaitTime As Integer
-
         Public Property RequiredInputId As String = ""
-
         Public Property DebugExpectedResult As DigSigService.DigSigStatus
 
-        Private CustomMarkup As ITemplate = Nothing
+        Private _customMarkup As ITemplate = Nothing
 
         <TemplateContainer(GetType(CustomMarkupContainer))>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property CustomTemplate() As ITemplate
             Get
-                Return CustomMarkup
+                Return _customMarkup
             End Get
             Set(ByVal value As ITemplate)
-                CustomMarkup = value
+                _customMarkup = value
             End Set
         End Property
 
 
         Protected Sub Control_Init() Handles Me.Init
-            If CustomMarkup IsNot Nothing Then
+            If _customMarkup IsNot Nothing Then
                 CustomTemplate.InstantiateIn(New CustomMarkupContainer(2))
             End If
 

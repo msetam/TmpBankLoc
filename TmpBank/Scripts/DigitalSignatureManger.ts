@@ -57,10 +57,10 @@ class DigitalSignatureManager {
 
         this.wrapper = document.querySelector("#" + this.wrapperId) as HTMLDivElement;
         this.submitBtn = this.wrapper.querySelector("#" + this.submitBtnId) as HTMLInputElement;
-        this.digSigAuthMethods = this.wrapper.querySelector(".-auth-method-selector");
-        this.requiredInput = this.wrapper.querySelector(this.requiredInputId);
+        this.digSigAuthMethods = this.wrapper.querySelector(".-auth-method-selector") as HTMLFieldSetElement;
+        this.requiredInput = this.wrapper.querySelector(this.requiredInputId) as HTMLInputElement;
 
-        this.setAuthMethodsSelectedListerenrs();
+        this.setAuthMethodsSelectedListeenrs();
         this.setSubmitListener();
 
 
@@ -92,16 +92,14 @@ class DigitalSignatureManager {
                         console.log(errors);
                         this.enableWrapper();
                     },
-                    xhrFields: {
-                        withCredentials: true
-                    }
+                    xhrFields: { withCrendtials: true },
                 });
             }
         });
     }
 
-    private setAuthMethodsSelectedListerenrs() {
-        let digSigRb: HTMLInputElement = this.digSigAuthMethods.querySelector(".-dig-sig-rb");
+    private setAuthMethodsSelectedListeenrs() {
+        let digSigRb: HTMLInputElement = this.digSigAuthMethods.querySelector(".-dig-sig-rb") as HTMLInputElement;
         this._isSigMethodSelected = digSigRb.checked;
 
         this.digSigAuthMethods.addEventListener("change", (e) => {

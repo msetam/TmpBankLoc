@@ -1,6 +1,4 @@
-﻿Imports System.Text.Json
-Imports System.Text.Json.Serialization
-Imports Newtonsoft.Json
+﻿Imports Newtonsoft.Json
 Imports TmpBankService.Models
 
 Namespace Utils

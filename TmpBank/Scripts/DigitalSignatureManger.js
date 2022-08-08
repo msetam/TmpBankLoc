@@ -56,9 +56,6 @@ var DigitalSignatureManager = /** @class */ (function () {
                     error: function (errors) {
                         console.log(errors);
                         _this.enableWrapper();
-                    },
-                    xhrFields: {
-                        withCredentials: true
                     }
                 });
             }
@@ -100,10 +97,7 @@ var DigitalSignatureManager = /** @class */ (function () {
                     onRetry && typeof onRetry === 'function' && onRetry(response.d.Status);
                 }
             },
-            error: function (errors) { return onFailed && typeof onFailed === 'function' && onFailed(errors.d); },
-            xhrFields: {
-                withCredentials: true
-            }
+            error: function (errors) { return onFailed && typeof onFailed === 'function' && onFailed(errors.d); }
         });
     };
     DigitalSignatureManager.getInstance = function (wrapperID) {

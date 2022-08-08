@@ -40,30 +40,54 @@
     </asp:ScriptManagerProxy>
     <h1 class="h1">Login/Signup Page
     </h1>
-    <asp:Panel runat="server" DefaultButton="LoginBtn_View" ID="LoginWrapper_PNL">
+    <%--note:we cannot use defaultbutton on panel because the button is not visible now till we render it into template  hence then need for WrappingPanel--%>
+    <asp:Panel runat="server" ID="LoginWrapper_PNL">
         <div class="login table-bordered form-horizontal">
             <h2 class="h2">Login
             </h2>
-            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="-required-input"/>
+            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="-required-input" />
             <uc:LabledInput ID="PasswordLogin_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." runat="server" />
 
-            <uc:DigitalSig runat="server"
+<%--            <uc:DigitalSig runat="server"
                 ID="DigSig_UC"
                 Interval="1000"
                 WrapperId="<%# LoginWrapper_PNL.ClientID %>"
-                SubmitButtonId="<%# LoginBtn_View.ClientID %>"
+                SubmitButtonId="<%#LoginBtn_View.ClientID %>"
                 RequiredInputId="<%# UserNameLogin_View.Input.ClientID %>"
+                WrappingPanel="<%# LoginWrapper_PNL %>"
                 DebugWaitTime="10000"
-                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>" />
+                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
+            </uc:DigitalSig>
+            <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" />--%>
+            
+<%--            <uc:DigitalSig runat="server"
+                           ID="DigSig_UC"
+                           Interval="1000"
+                           WrapperId="<%# LoginWrapper_PNL.ClientID %>"
+                           RequiredInputId="<%# UserNameLogin_View.Input.ClientID %>"
+                           WrappingPanel="<%# LoginWrapper_PNL %>"
+                           DebugWaitTime="10000"
+                           DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
+                <SubmitTemplate>
+                    my submit  template
+                    <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" SubmitButton/>
+                </SubmitTemplate>
+            </uc:DigitalSig>--%>
+            
+            <uc:DigitalSig runat="server"
+                           ID="DigSig_UC"
+                           Interval="1000"
+                           WrapperId="<%# LoginWrapper_PNL.ClientID %>"
+                           RequiredInputId="<%# UserNameLogin_View.Input.ClientID %>"
+                           WrappingPanel="<%# LoginWrapper_PNL %>"
+                           DebugWaitTime="10000"
+                           DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
+            </uc:DigitalSig>
+            
 
-            <%--            <uc:DigitalSig runat="server"
-                ID="DigitalSig1"
-                Interval="1000"
-                WrapperId="<%# LoginWrapper_PNL.ClientID %>"
-                DebugWaitTime="10000"
-                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>" />--%>
+       
 
-            <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" />
+
             <% If Not _IsLoginValid Then %>
             <div class="row">
                 <div class="alert alert-danger col-xs-11 col-md-6 col-lg-5" role="alert">

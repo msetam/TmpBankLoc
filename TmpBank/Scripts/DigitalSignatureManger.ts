@@ -92,7 +92,7 @@ class DigitalSignatureManager {
                         console.log(errors);
                         this.enableWrapper();
                     },
-                    xhrFields: { withCrendtials: true },
+     /*               xhrFields: { withCrendtials: true },*/
                 });
             }
         });
@@ -133,9 +133,9 @@ class DigitalSignatureManager {
                 }
             },
             error: (errors: any) => onFailed && typeof onFailed === 'function' && onFailed(errors.d),
-            xhrFields: {
-                withCredentials: true
-            }
+            //xhrFields: {
+            //    withCredentials: true
+            //}
         });
     }
 

@@ -58,7 +58,7 @@ Namespace Pages
             Return GetRouteUrl("AccountHome", New With {.Username = username})
         End Function
 
-        Private Sub _Login() Handles LoginBtn_View.Click
+        Private Sub _Login() Handles DigSig_UC.Submit ' or LoginBtn_View.Click
             Dim loginResult As String = ""
             If Not ValidateInputStringExists("UserNameL", UserNameLogin_View.Value, loginResult) OrElse
                 Not ValidateInputStringExists("PassowordL", PasswordLogin_View.Value, loginResult) Then

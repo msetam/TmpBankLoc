@@ -51,15 +51,6 @@ Namespace Pages
         Protected WithEvents DigSig_UC As Global.TmpBank.Controls.DigitalSig
 
         '''<summary>
-        '''LoginBtn_View control.
-        '''</summary>
-        '''<remarks>
-        '''Auto-generated field.
-        '''To modify move field declaration from designer file to code-behind file.
-        '''</remarks>
-        Protected WithEvents LoginBtn_View As Global.System.Web.UI.WebControls.Button
-
-        '''<summary>
         '''LoginValidationResult_View control.
         '''</summary>
         '''<remarks>

@@ -19,6 +19,12 @@ Namespace Logic
                 )
 
             routesCollection.MapPageRoute(
+                "AccountEntryDigitalSigTest",
+                "account/entry-test",
+            "~/AccountEntryDigitalSig.aspx",
+            True)
+
+            routesCollection.MapPageRoute(
                 "AccountSignOut",
                 "account/signout",
                 "~/SignOut.aspx",

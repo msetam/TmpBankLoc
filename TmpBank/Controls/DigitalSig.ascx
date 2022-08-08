@@ -10,18 +10,18 @@
         <fieldset class="-auth-method-selector">
             <legend>Select authentication method:</legend>
 
-            <div class="form-group">
+            <div class="form-group" style="display: flex">
                 <label class="radio-inline" for="<%= DigitalSignature_RB.ClientID %>">
                     digital signature
        
                 </label>
-                <input runat="server" type="radio" id="DigitalSignature_RB" class="-dig-sig-rb" name="auth-method" value="digital signature" />
+                <input runat="server" type="radio" id="DigitalSignature_RB" class="-dig-sig-rb" style="margin-left: 1em" name="auth-method" value="digital signature" />
 
                 <label class="radio-inline" for="<%= UsernamePassword_RB.ClientID %>">
                     username and password
        
                 </label>
-                <input runat="server" type="radio" id="UsernamePassword_RB" name="auth-method" value="username and password" checked />
+                <input runat="server" type="radio" id="UsernamePassword_RB" name="auth-method" style="margin-left: 1em" value="username and password" checked />
 
             </div>
 

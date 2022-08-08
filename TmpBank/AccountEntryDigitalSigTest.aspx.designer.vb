@@ -12,7 +12,7 @@ Option Explicit On
 
 Namespace Pages
 
-    Partial Public Class AccountEntry
+    Partial Public Class AccountEntryDigitalSigTest
 
         '''<summary>
         '''LoginWrapper_PNL control.
@@ -69,48 +69,102 @@ Namespace Pages
         Protected WithEvents LoginValidationResult_View As Global.System.Web.UI.WebControls.Label
 
         '''<summary>
-        '''UsernameSignup_View control.
+        '''LoginWrapper2_PNL control.
         '''</summary>
         '''<remarks>
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents UsernameSignup_View As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents LoginWrapper2_PNL As Global.System.Web.UI.WebControls.Panel
 
         '''<summary>
-        '''PasswordSignup_View control.
+        '''UserNameLogin2_View control.
         '''</summary>
         '''<remarks>
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents PasswordSignup_View As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents UserNameLogin2_View As Global.TmpBank.Controls.LabeldInput
 
         '''<summary>
-        '''EmailSignup_View control.
+        '''LabledInput4 control.
         '''</summary>
         '''<remarks>
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents EmailSignup_View As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents LabledInput4 As Global.TmpBank.Controls.LabeldInput
 
         '''<summary>
-        '''SignUpBtn_View control.
+        '''DigSig2_UC control.
         '''</summary>
         '''<remarks>
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents SignUpBtn_View As Global.System.Web.UI.WebControls.Button
+        Protected WithEvents DigSig2_UC As Global.TmpBank.Controls.DigitalSig
 
         '''<summary>
-        '''SignupValidationResult_View control.
+        '''Label2 control.
         '''</summary>
         '''<remarks>
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents SignupValidationResult_View As Global.System.Web.UI.WebControls.Label
+        Protected WithEvents Label2 As Global.System.Web.UI.WebControls.Label
+
+        '''<summary>
+        '''LoginWrapper3_PNL control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents LoginWrapper3_PNL As Global.System.Web.UI.WebControls.Panel
+
+        '''<summary>
+        '''UserNameLogin3_View control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents UserNameLogin3_View As Global.TmpBank.Controls.LabeldInput
+
+        '''<summary>
+        '''LabledInput2 control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents LabledInput2 As Global.TmpBank.Controls.LabeldInput
+
+        '''<summary>
+        '''DigitalSig1 control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents DigitalSig1 As Global.TmpBank.Controls.DigitalSig
+
+        '''<summary>
+        '''Button1 control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents Button1 As Global.System.Web.UI.WebControls.Button
+
+        '''<summary>
+        '''Label1 control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents Label1 As Global.System.Web.UI.WebControls.Label
     End Class
 End Namespace

@@ -71,6 +71,9 @@
                         <li>
                             <asp:HyperLink runat="server" ID="Transactions_View" Text="Transactions" />
                         </li>
+                        <li>
+                            <asp:HyperLink runat="server" ID="AccountEntryDigitalSig_View" Text="Account Entry DigSigTest" />
+                        </li>
                         <% If TmpBankService.Utils.IdentityUtils.IsCurrentUserAuthenticatedStatic() Then%>
                         <li style="float: right">
                             <asp:HyperLink runat="server" ID="SignOut_View" Text="Signout" />

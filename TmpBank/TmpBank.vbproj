@@ -274,6 +274,7 @@
     <Content Include=".gitignore" />
     <Content Include="About.aspx" />
     <Content Include="AccountEntry.aspx" />
+    <Content Include="AccountEntryDigitalSigTest.aspx" />
     <Content Include="Account\FindUser.aspx" />
     <Content Include="Account\Transactions.aspx" />
     <Content Include="Content\bootstrap-theme.css" />
@@ -359,6 +360,13 @@
     <Compile Include="AccountEntry.aspx.vb">
       <DependentUpon>AccountEntry.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AccountEntryDigitalSigTest.aspx.designer.vb">
+      <DependentUpon>AccountEntryDigitalSigTest.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountEntryDigitalSigTest.aspx.vb">
+      <DependentUpon>AccountEntryDigitalSigTest.aspx</DependentUpon>
+      <SubType>ASPXCodebehind</SubType>
     </Compile>
     <Compile Include="Account\Account.master.designer.vb">
       <DependentUpon>Account.master</DependentUpon>

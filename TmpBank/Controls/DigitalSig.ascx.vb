@@ -57,27 +57,26 @@ Namespace Controls
         Public Property RequiredInputId() As String
         Public Property DebugExpectedResult() As DigSigService.DigSigStatus
 
-        Private _Events As EventHandlerList
-        Private _Number As Integer
-        Private Shared ReadOnly Property _ValueChangedEventOwner As New Object()
+        Protected _CustomEvents As EventHandlerList
+        Protected Shared ReadOnly Property _ValueChangedEventOwner As New Object()
 
 
-        Private ReadOnly Property Events As EventHandlerList
+        Protected ReadOnly Property CustomEvents As EventHandlerList
             Get
-                If _Events Is Nothing Then
-                    _Events = New EventHandlerList()
+                If _CustomEvents Is Nothing Then
+                    _CustomEvents = New EventHandlerList()
                 End If
-                Return _Events
+                Return _CustomEvents
             End Get
         End Property
 
 
         Public Custom Event Submit As EventHandler
             AddHandler(value As EventHandler)
-                Events.AddHandler(_ValueChangedEventOwner, value)
+                CustomEvents.AddHandler(_ValueChangedEventOwner, value)
             End AddHandler
             RemoveHandler(value As EventHandler)
-                Events.RemoveHandler(_ValueChangedEventOwner, value)
+                CustomEvents.RemoveHandler(_ValueChangedEventOwner, value)
             End RemoveHandler
             RaiseEvent(sender As Object, e As EventArgs)
                 DirectCast(Events(_ValueChangedEventOwner), EventHandler)?.Invoke(sender, e)
@@ -177,7 +176,11 @@ Namespace Controls
 
 
         Private Sub _SetupInputs(container As CustomMarkupContainer)
+            If InputsTemplate IsNot Nothing Then
+                For Each value In container.FindControlByAttribute("InputView")
 
+                Next
+            End If
         End Sub
 
 
@@ -191,7 +194,7 @@ Namespace Controls
         ' sets up SubmitButtonId and creates SubmitTemplate if exists
         Private Sub _SetupSubmitButton(container As CustomMarkupContainer)
             If SubmitTemplate IsNot Nothing Then
-                Dim buttons = container.FindControlByAttribute("SubmitButton", True).ToArray()
+                Dim buttons = container.FindControlByAttribute("SubmitView", True).ToArray()
                 If buttons.Count() > 0 AndAlso buttons.Count() = 1 Then
                     SubmitButtonId = buttons(0).ClientID
                     Submit_BTN.Visible = False
@@ -200,7 +203,7 @@ Namespace Controls
                     End If
                     Return
                 End If
-                Throw New Exception("SubmitButton attribute expected (exactly) on of the elements withing SubmitTemplate")
+                Throw New Exception("SubmitView attribute expected on exactly one of the elements within SubmitTemplate")
             ElseIf IsNothing(SubmitButtonId) Then
                 SubmitButtonId = Submit_BTN.ClientID
                 If WrappingPanel IsNot Nothing Then

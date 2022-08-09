@@ -7,6 +7,15 @@ enum DigitalSignatureStatus {
     SUCCEEDED,
     FAILED,
 }
+
+
+// when switching between different Auth methods what is gonna be the action applied to all inputs provided in inputsNames
+enum Action {
+    DISABLE = 0,
+    HIDE,
+    NONE
+}
+
 class DigitalSignatureManager {
 
     private wrapper: HTMLDivElement;
@@ -17,6 +26,8 @@ class DigitalSignatureManager {
     private requestCode: number;
     private wrapperId: string;
     private requiredInputId: string;
+    private action: Action;
+    private inputsNames: string[];
     private submitBtnId: string;
     private interval: number;
     private debugWaitTime?: number;
@@ -37,14 +48,18 @@ class DigitalSignatureManager {
     public static createInstance(wrapperId: string,
         submitBtnId: string,
         interval: number,
+        action: Action,
         requeiredInputId?: string,
+        inputsNames?: string,
         debugExpectedResult?: DigitalSignatureStatus,
         debugWaitTime?: number) {
 
         const instance = new DigitalSignatureManager();
         DigitalSignatureManager.wrapperIdCodeToInstance[wrapperId] = instance;
         instance.wrapperId = wrapperId;
-        instance.requiredInputId = requeiredInputId ? ".-required-input" : requeiredInputId;
+        instance.requiredInputId = requeiredInputId ? requeiredInputId : ".-required-input";
+        instance.action = action;
+        instance.inputsNames = inputsNames?.split(",");
         instance.submitBtnId = submitBtnId;
         instance.interval = interval;
         instance.debugWaitTime = debugWaitTime;
@@ -53,13 +68,19 @@ class DigitalSignatureManager {
 
     }
 
+
+    public static getInstance(wrapperID: string): DigitalSignatureManager {
+        return DigitalSignatureManager.wrapperIdCodeToInstance[wrapperID];
+    }
+
     private init() {
 
         this.wrapper = document.querySelector("#" + this.wrapperId) as HTMLDivElement;
         this.submitBtn = this.wrapper.querySelector("#" + this.submitBtnId) as HTMLInputElement;
         this.digSigAuthMethods = this.wrapper.querySelector(".-auth-method-selector") as HTMLFieldSetElement;
-        this.requiredInput = this.wrapper.querySelector(this.requiredInputId) as HTMLInputElement;
-
+        this.requiredInput = this.wrapper.querySelector(
+            this.requiredInputId[0] === "." ? this.requiredInputId : "#" + this.requiredInputId
+        ) as HTMLInputElement;
         this.setAuthMethodsSelectedListeenrs();
         this.setSubmitListener();
 
@@ -92,7 +113,7 @@ class DigitalSignatureManager {
                         console.log(errors);
                         this.enableWrapper();
                     },
-     /*               xhrFields: { withCrendtials: true },*/
+                    /*               xhrFields: { withCrendtials: true },*/
                 });
             }
         });
@@ -100,15 +121,66 @@ class DigitalSignatureManager {
 
     private setAuthMethodsSelectedListeenrs() {
         let digSigRb: HTMLInputElement = this.digSigAuthMethods.querySelector(".-dig-sig-rb") as HTMLInputElement;
-        this._isSigMethodSelected = digSigRb.checked;
 
-        this.digSigAuthMethods.addEventListener("change", (e) => {
-            this._isSigMethodSelected = digSigRb.checked;
-            const element = e.target as HTMLElement
-            if (element instanceof HTMLInputElement && (element as HTMLInputElement).type === "radio") {
-                this.onAuthMethodChanged && typeof this.onAuthMethodChanged === "function" && this.onAuthMethodChanged(element);
+        // setting the inital state
+        (this.digSigAuthMethods.querySelectorAll("input[type = radio]") as NodeListOf<HTMLInputElement>).forEach((element) => {
+            if (element.checked) {
+                this.onAuthFieldMethodChanged(digSigRb, null, element);
             }
-        });
+        })
+
+        this.digSigAuthMethods.addEventListener("change", (e) => { this.onAuthFieldMethodChanged(digSigRb, e) });
+    }
+
+    // for fieldset authmethods html change event
+    private onAuthFieldMethodChanged(digSigRb: HTMLInputElement, e?: Event, selectedElement?: HTMLInputElement) {
+        this._isSigMethodSelected = digSigRb.checked;
+        const element = selectedElement ? selectedElement : e.target as HTMLElement
+        if (element instanceof HTMLInputElement && (element as HTMLInputElement).type === "radio") {
+            this.onAuthMethodChanged && typeof this.onAuthMethodChanged === "function" && this.onAuthMethodChanged(element);
+
+            if (this.action != Action.NONE) {
+
+
+
+                // first we set the state of requiredInput because it can also be an input for other auth methods(flaggs: RequiredView InputView)
+                // so iterating over inputsnames enables it again
+                if (this.action == Action.DISABLE) {
+                    if (this._isSigMethodSelected) {
+                        this.requiredInput.removeAttribute("disabled");
+                    } else {
+                        this.requiredInput.setAttribute("disabled", "true");
+
+                    }
+                } else if (this.action == Action.HIDE) {
+                    if (this._isSigMethodSelected) {
+                        this.requiredInput.classList.remove("display-none");
+                    } else {
+                        this.requiredInput.classList.add("display-none");
+                    }
+                }
+
+                this.inputsNames.forEach(name => {
+                    if (name === "[" || name === "]" || name === "") return
+                    const inputElem = this.wrapper.querySelector(`[name="${name}"]`);
+                    if (this.action == Action.DISABLE) {
+                        if (this._isSigMethodSelected && inputElem !== this.requiredInput) {
+                            inputElem.setAttribute("disabled", "true");
+                        } else {
+                            inputElem.removeAttribute("disabled");
+                        }
+                    } else if (this.action == Action.HIDE) {
+                        if (this._isSigMethodSelected && inputElem !== this.requiredInput) {
+                            inputElem.classList.add("display-none");
+                        } else {
+                            inputElem.classList.remove("display-none");
+                        }
+                    }
+                });
+
+
+            }
+        }
     }
 
     private checkRequestStatus() {
@@ -139,9 +211,6 @@ class DigitalSignatureManager {
         });
     }
 
-    public static getInstance(wrapperID: string): DigitalSignatureManager {
-        return DigitalSignatureManager.wrapperIdCodeToInstance[wrapperID];
-    }
 
     public isSigMethodSelected(): boolean {
         return this._isSigMethodSelected;

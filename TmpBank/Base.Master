@@ -14,11 +14,15 @@
     <asp:PlaceHolder runat="server">
         <%: Scripts.Render("~/bundles/modernizr") %>
     </asp:PlaceHolder>
-
+    <style>
+        .display-none {
+            display: none !important;
+        }
+    </style>
     <asp:ContentPlaceHolder ID="HeadContent" runat="server">
     </asp:ContentPlaceHolder>
-    
-    <asp:PlaceHolder runat="server" ID="UserControlScrips"/>
+
+    <asp:PlaceHolder runat="server" ID="UserControlScrips" />
 
     <webopt:BundleReference runat="server" Path="~/Content/css" />
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
@@ -45,7 +49,6 @@
                 <%--Site Scripts--%>
             </Scripts>
             <Services>
-
             </Services>
         </asp:ScriptManager>
         <div class="navbar navbar-inverse navbar-fixed-top">

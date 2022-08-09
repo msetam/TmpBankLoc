@@ -7,26 +7,38 @@ var DigitalSignatureStatus;
     DigitalSignatureStatus[DigitalSignatureStatus["SUCCEEDED"] = 2] = "SUCCEEDED";
     DigitalSignatureStatus[DigitalSignatureStatus["FAILED"] = 3] = "FAILED";
 })(DigitalSignatureStatus || (DigitalSignatureStatus = {}));
+// when switching between different Auth methods what is gonna be the action applied to all inputs provided in inputsNames
+var Action;
+(function (Action) {
+    Action[Action["DISABLE"] = 0] = "DISABLE";
+    Action[Action["HIDE"] = 1] = "HIDE";
+    Action[Action["NONE"] = 2] = "NONE";
+})(Action || (Action = {}));
 var DigitalSignatureManager = /** @class */ (function () {
     function DigitalSignatureManager() {
         this._isSigMethodSelected = false;
     }
-    DigitalSignatureManager.createInstance = function (wrapperId, submitBtnId, interval, requeiredInputId, debugExpectedResult, debugWaitTime) {
+    DigitalSignatureManager.createInstance = function (wrapperId, submitBtnId, interval, action, requeiredInputId, inputsNames, debugExpectedResult, debugWaitTime) {
         var instance = new DigitalSignatureManager();
         DigitalSignatureManager.wrapperIdCodeToInstance[wrapperId] = instance;
         instance.wrapperId = wrapperId;
-        instance.requiredInputId = requeiredInputId ? ".-required-input" : requeiredInputId;
+        instance.requiredInputId = requeiredInputId ? requeiredInputId : ".-required-input";
+        instance.action = action;
+        instance.inputsNames = inputsNames === null || inputsNames === void 0 ? void 0 : inputsNames.split(",");
         instance.submitBtnId = submitBtnId;
         instance.interval = interval;
         instance.debugWaitTime = debugWaitTime;
         instance.debugExpectedResult = debugExpectedResult;
         instance.init();
     };
+    DigitalSignatureManager.getInstance = function (wrapperID) {
+        return DigitalSignatureManager.wrapperIdCodeToInstance[wrapperID];
+    };
     DigitalSignatureManager.prototype.init = function () {
         this.wrapper = document.querySelector("#" + this.wrapperId);
         this.submitBtn = this.wrapper.querySelector("#" + this.submitBtnId);
         this.digSigAuthMethods = this.wrapper.querySelector(".-auth-method-selector");
-        this.requiredInput = this.wrapper.querySelector(this.requiredInputId);
+        this.requiredInput = this.wrapper.querySelector(this.requiredInputId[0] === "." ? this.requiredInputId : "#" + this.requiredInputId);
         this.setAuthMethodsSelectedListeenrs();
         this.setSubmitListener();
     };
@@ -64,14 +76,63 @@ var DigitalSignatureManager = /** @class */ (function () {
     DigitalSignatureManager.prototype.setAuthMethodsSelectedListeenrs = function () {
         var _this = this;
         var digSigRb = this.digSigAuthMethods.querySelector(".-dig-sig-rb");
-        this._isSigMethodSelected = digSigRb.checked;
-        this.digSigAuthMethods.addEventListener("change", function (e) {
-            _this._isSigMethodSelected = digSigRb.checked;
-            var element = e.target;
-            if (element instanceof HTMLInputElement && element.type === "radio") {
-                _this.onAuthMethodChanged && typeof _this.onAuthMethodChanged === "function" && _this.onAuthMethodChanged(element);
+        // setting the inital state
+        this.digSigAuthMethods.querySelectorAll("input[type = radio]").forEach(function (element) {
+            if (element.checked) {
+                _this.onAuthFieldMethodChanged(digSigRb, null, element);
             }
         });
+        this.digSigAuthMethods.addEventListener("change", function (e) { _this.onAuthFieldMethodChanged(digSigRb, e); });
+    };
+    // for fieldset authmethods html change event
+    DigitalSignatureManager.prototype.onAuthFieldMethodChanged = function (digSigRb, e, selectedElement) {
+        var _this = this;
+        this._isSigMethodSelected = digSigRb.checked;
+        var element = selectedElement ? selectedElement : e.target;
+        if (element instanceof HTMLInputElement && element.type === "radio") {
+            this.onAuthMethodChanged && typeof this.onAuthMethodChanged === "function" && this.onAuthMethodChanged(element);
+            if (this.action != Action.NONE) {
+                // first we set the state of requiredInput because it can also be an input for other auth methods(flaggs: RequiredView InputView)
+                // so iterating over inputsnames enables it again
+                if (this.action == Action.DISABLE) {
+                    if (this._isSigMethodSelected) {
+                        this.requiredInput.removeAttribute("disabled");
+                    }
+                    else {
+                        this.requiredInput.setAttribute("disabled", "true");
+                    }
+                }
+                else if (this.action == Action.HIDE) {
+                    if (this._isSigMethodSelected) {
+                        this.requiredInput.classList.remove("display-none");
+                    }
+                    else {
+                        this.requiredInput.classList.add("display-none");
+                    }
+                }
+                this.inputsNames.forEach(function (name) {
+                    if (name === "[" || name === "]" || name === "")
+                        return;
+                    var inputElem = _this.wrapper.querySelector("[name=\"".concat(name, "\"]"));
+                    if (_this.action == Action.DISABLE) {
+                        if (_this._isSigMethodSelected && inputElem !== _this.requiredInput) {
+                            inputElem.setAttribute("disabled", "true");
+                        }
+                        else {
+                            inputElem.removeAttribute("disabled");
+                        }
+                    }
+                    else if (_this.action == Action.HIDE) {
+                        if (_this._isSigMethodSelected && inputElem !== _this.requiredInput) {
+                            inputElem.classList.add("display-none");
+                        }
+                        else {
+                            inputElem.classList.remove("display-none");
+                        }
+                    }
+                });
+            }
+        }
     };
     DigitalSignatureManager.prototype.checkRequestStatus = function () {
         var _this = this;
@@ -99,9 +160,6 @@ var DigitalSignatureManager = /** @class */ (function () {
             },
             error: function (errors) { return onFailed && typeof onFailed === 'function' && onFailed(errors.d); }
         });
-    };
-    DigitalSignatureManager.getInstance = function (wrapperID) {
-        return DigitalSignatureManager.wrapperIdCodeToInstance[wrapperID];
     };
     DigitalSignatureManager.prototype.isSigMethodSelected = function () {
         return this._isSigMethodSelected;

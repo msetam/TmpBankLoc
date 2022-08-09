@@ -23,6 +23,11 @@ Imports TmpBank.Utils
 
 Namespace Controls
 
+    Public Enum Action
+        DISABLE = 0
+        HIDE
+        NONE
+    End Enum
 
     Public Class CustomMarkupContainer
         Inherits UserControl
@@ -51,11 +56,14 @@ Namespace Controls
         Public Property WrappingPanel() As Panel
         Public Property LoginOptions() As String() = {}
         Public Property Interval() As Integer
+        Public Property Action() As Action = Action.DISABLE
         Public Property WrapperId() As String
         Public Property SubmitButtonId() As String
         Public Property DebugWaitTime() As Integer
         Public Property RequiredInputId() As String
         Public Property DebugExpectedResult() As DigSigService.DigSigStatus
+        Public Property InputsNames() As List(Of String)
+
 
         Protected _CustomEvents As EventHandlerList
         Protected Shared ReadOnly Property _ValueChangedEventOwner As New Object()
@@ -91,6 +99,9 @@ Namespace Controls
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property HeaderMarkupTemplate() As ITemplate
 
+
+        ' Inlcudes all of the inputs for our control(except submit) which should be flagged with InputView
+        ' Required input id should be flaged with adding RequiredInput attribute(optinal InputView)
         <TemplateContainer(GetType(CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
         <Browsable(True)>
@@ -98,7 +109,7 @@ Namespace Controls
         Public Property InputsTemplate() As ITemplate
 
 
-        ' Must include a server control that has an element with SubmitButton attribute
+        ' Must include a server control that has an element with SubmitView attribute
         <TemplateContainer(GetType(CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
         <Browsable(True)>
@@ -129,30 +140,24 @@ Namespace Controls
 
         Protected Overrides Sub OnDataBinding(e As EventArgs)
             MyBase.OnDataBinding(e)
+            ' we call set default attrs before addTemplates because that could override defualt settings
             SetDefaultForAttributes()
             _AddTemplates()
         End Sub
 
         Protected Sub SetJavascript()
             Dim scriptControl = New LiteralControl()
-            scriptControl.Text = $"<script> document.addEventListener('DOMContentLoaded', ()=> DigitalSignatureManager.createInstance('{WrapperId}', '{SubmitButtonId}', {Interval}, '{RequiredInputId}', {DirectCast(DebugExpectedResult, Integer)}, {DebugWaitTime}) )</script>"
+            scriptControl.Text = $"<script> document.addEventListener('DOMContentLoaded', ()=> DigitalSignatureManager.createInstance('{WrapperId}', '{SubmitButtonId}', {Interval}, {DirectCast(Action, Integer)} , '{RequiredInputId}','{String.Join(",", InputsNames) }' , {DirectCast(DebugExpectedResult, Integer)}, {DebugWaitTime}) )</script>"
             NamingContainer.Page.Header.Controls.Add(scriptControl)
         End Sub
 
 
         Private Sub SetDefaultForAttributes()
-            If SubmitButtonId Is Nothing Then
-                SubmitButtonId = Submit_BTN.ClientID
-            Else
-                Submit_BTN.Visible = False
-            End If
             If WrapperId Is Nothing Then
                 WrapperId = DigSigWrapper_DIV.ClientID
             End If
-            If RequiredInputId Is Nothing Then
-                RequiredInputId = NationalCode_UC.ClientID
-            Else
-                NationalCode_UC.Visible = False
+            If InputsNames Is Nothing Then
+                InputsNames = New List(Of String)
             End If
         End Sub
 
@@ -175,12 +180,29 @@ Namespace Controls
         End Sub
 
 
+
+        ' Todo: test if its htmlcontrol with no id set we can still access UniqueID and it exists
+        ' todo: requiredinput is not necessary to exist in InputsTemplate this could only be other auth methods inputs
         Private Sub _SetupInputs(container As CustomMarkupContainer)
+
             If InputsTemplate IsNot Nothing Then
                 For Each value In container.FindControlByAttribute("InputView")
-
+                    InputsNames.Add(value.UniqueID)
                 Next
+                Dim requiredInputArr = container.FindControlByAttribute("RequiredInput").ToArray()
+                If requiredInputArr IsNot Nothing AndAlso requiredInputArr.Count <> 0 AndAlso requiredInputArr.Length = 1 Then
+                    RequiredInputId = requiredInputArr(0).ClientID
+                    NationalCode_UC.Visible = False
+                    Return
+                End If
+                ThrowAttrExpectedException("RequiredInput", "InputsTemplate")
+                Return
+            ElseIf RequiredInputId IsNot Nothing Then
+                NationalCode_UC.Visible = False
+            Else
+                RequiredInputId = NationalCode_UC.Input.ClientID
             End If
+
         End Sub
 
 
@@ -203,13 +225,19 @@ Namespace Controls
                     End If
                     Return
                 End If
-                Throw New Exception("SubmitView attribute expected on exactly one of the elements within SubmitTemplate")
-            ElseIf IsNothing(SubmitButtonId) Then
-                SubmitButtonId = Submit_BTN.ClientID
+                ThrowAttrExpectedException("SubmitView", "SubmitTemplate")
+            ElseIf SubmitButtonId IsNot Nothing Then
+                Submit_BTN.Visible = False
                 If WrappingPanel IsNot Nothing Then
                     WrappingPanel.DefaultButton = SubmitButtonId
                 End If
+            Else
+                SubmitButtonId = Submit_BTN.ClientID
+                If WrappingPanel IsNot Nothing Then
+                    WrappingPanel.DefaultButton = Submit_BTN.UniqueID
+                End If
             End If
+
         End Sub
 
         ' we set javascript after CustomMarkupContainer_Init because only then we have access to templated elements ids
@@ -223,6 +251,10 @@ Namespace Controls
 
             SetJavascript()
 
+        End Sub
+
+        Private Sub ThrowAttrExpectedException(attributeName As String, templateName As String)
+            Throw New Exception($"{attributeName} attribute expected on exactly one of the elements within {templateName}")
         End Sub
 
         Private Sub SubmitBtn_Click() Handles Submit_BTN.Click

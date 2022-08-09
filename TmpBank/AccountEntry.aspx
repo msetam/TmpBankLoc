@@ -48,17 +48,6 @@
             <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="-required-input" />
             <uc:LabledInput ID="PasswordLogin_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." runat="server" />
 
-<%--            <uc:DigitalSig runat="server"
-                ID="DigSig_UC"
-                Interval="1000"
-                WrapperId="<%# LoginWrapper_PNL.ClientID %>"
-                SubmitButtonId="<%#LoginBtn_View.ClientID %>"
-                RequiredInputId="<%# UserNameLogin_View.Input.ClientID %>"
-                WrappingPanel="<%# LoginWrapper_PNL %>"
-                DebugWaitTime="10000"
-                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
-            </uc:DigitalSig>
-            <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" />--%>
             
             <uc:DigitalSig runat="server"
                            ID="DigSig_UC"
@@ -73,20 +62,6 @@
                     <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" SubmitView/>
                 </SubmitTemplate>
             </uc:DigitalSig>
-            
-<%--            <uc:DigitalSig runat="server"
-                           ID="DigSig_UC"
-                           Interval="1000"
-                           WrapperId="<%# LoginWrapper_PNL.ClientID %>"
-                           RequiredInputId="<%# UserNameLogin_View.Input.ClientID %>"
-                           WrappingPanel="<%# LoginWrapper_PNL %>"
-                           DebugWaitTime="10000"
-                           DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
-            </uc:DigitalSig>--%>
-            
-
-       
-
 
             <% If Not _IsLoginValid Then %>
             <div class="row">

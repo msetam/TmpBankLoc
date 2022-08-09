@@ -274,6 +274,7 @@
     <Content Include=".gitignore" />
     <Content Include="About.aspx" />
     <Content Include="AccountEntry.aspx" />
+    <Content Include="AccountEntryDigitalSigTest.aspx" />
     <Content Include="Account\FindUser.aspx" />
     <Content Include="Account\Transactions.aspx" />
     <Content Include="Content\bootstrap-theme.css" />
@@ -360,6 +361,13 @@
       <DependentUpon>AccountEntry.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="AccountEntryDigitalSigTest.aspx.designer.vb">
+      <DependentUpon>AccountEntryDigitalSigTest.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AccountEntryDigitalSigTest.aspx.vb">
+      <DependentUpon>AccountEntryDigitalSigTest.aspx</DependentUpon>
+      <SubType>ASPXCodebehind</SubType>
+    </Compile>
     <Compile Include="Account\Account.master.designer.vb">
       <DependentUpon>Account.master</DependentUpon>
     </Compile>
@@ -372,14 +380,14 @@
     </Compile>
     <Compile Include="Account\FindUser.aspx.vb">
       <DependentUpon>FindUser.aspx</DependentUpon>
-      <SubType>ASPXCodebehind</SubType>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Account\Transactions.aspx.designer.vb">
       <DependentUpon>Transactions.aspx</DependentUpon>
     </Compile>
     <Compile Include="Account\Transactions.aspx.vb">
       <DependentUpon>Transactions.aspx</DependentUpon>
-      <SubType>ASPXCodebehind</SubType>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="App_Start\BundleConfig.vb" />
     <Compile Include="About.aspx.designer.vb">
@@ -403,6 +411,7 @@
     </Compile>
     <Compile Include="Controls\DigitalSig.ascx.vb">
       <DependentUpon>DigitalSig.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Controls\LabledInput.ascx.designer.vb">
       <DependentUpon>LabledInput.ascx</DependentUpon>
@@ -477,6 +486,7 @@
       <DependentUpon>Site.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Utils\ControlHelpers.vb" />
     <Compile Include="Utils\RestrictedPage.vb">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>

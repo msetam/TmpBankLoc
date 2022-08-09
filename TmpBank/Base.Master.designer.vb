@@ -51,6 +51,15 @@ Namespace Pages
         Protected WithEvents Transactions_View As Global.System.Web.UI.WebControls.HyperLink
 
         '''<summary>
+        '''AccountEntryDigitalSig_View control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents AccountEntryDigitalSig_View As Global.System.Web.UI.WebControls.HyperLink
+
+        '''<summary>
         '''SignOut_View control.
         '''</summary>
         '''<remarks>

@@ -27,7 +27,7 @@ var DigitalSignatureManager = /** @class */ (function () {
         this.submitBtn = this.wrapper.querySelector("#" + this.submitBtnId);
         this.digSigAuthMethods = this.wrapper.querySelector(".-auth-method-selector");
         this.requiredInput = this.wrapper.querySelector(this.requiredInputId);
-        this.setAuthMethodsSelectedListerenrs();
+        this.setAuthMethodsSelectedListeenrs();
         this.setSubmitListener();
     };
     DigitalSignatureManager.prototype.setSubmitListener = function () {
@@ -56,15 +56,12 @@ var DigitalSignatureManager = /** @class */ (function () {
                     error: function (errors) {
                         console.log(errors);
                         _this.enableWrapper();
-                    },
-                    xhrFields: {
-                        withCredentials: true
                     }
                 });
             }
         });
     };
-    DigitalSignatureManager.prototype.setAuthMethodsSelectedListerenrs = function () {
+    DigitalSignatureManager.prototype.setAuthMethodsSelectedListeenrs = function () {
         var _this = this;
         var digSigRb = this.digSigAuthMethods.querySelector(".-dig-sig-rb");
         this._isSigMethodSelected = digSigRb.checked;
@@ -100,10 +97,7 @@ var DigitalSignatureManager = /** @class */ (function () {
                     onRetry && typeof onRetry === 'function' && onRetry(response.d.Status);
                 }
             },
-            error: function (errors) { return onFailed && typeof onFailed === 'function' && onFailed(errors.d); },
-            xhrFields: {
-                withCredentials: true
-            }
+            error: function (errors) { return onFailed && typeof onFailed === 'function' && onFailed(errors.d); }
         });
     };
     DigitalSignatureManager.getInstance = function (wrapperID) {

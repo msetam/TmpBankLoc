@@ -15,13 +15,22 @@ Namespace Controls
     Partial Public Class DigitalSig
 
         '''<summary>
-        '''DigSigWrapper control.
+        '''DigSigWrapper_DIV control.
         '''</summary>
         '''<remarks>
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents DigSigWrapper As Global.System.Web.UI.HtmlControls.HtmlGenericControl
+        Protected WithEvents DigSigWrapper_DIV As Global.System.Web.UI.HtmlControls.HtmlGenericControl
+
+        '''<summary>
+        '''DefaultMarkup_DIV control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents DefaultMarkup_DIV As Global.System.Web.UI.HtmlControls.HtmlGenericControl
 
         '''<summary>
         '''NationalCode_UC control.
@@ -33,22 +42,22 @@ Namespace Controls
         Protected WithEvents NationalCode_UC As Global.TmpBank.Controls.LabeldInput
 
         '''<summary>
-        '''DigitalSignature control.
+        '''DigitalSignature_RB control.
         '''</summary>
         '''<remarks>
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents DigitalSignature As Global.System.Web.UI.HtmlControls.HtmlInputRadioButton
+        Protected WithEvents DigitalSignature_RB As Global.System.Web.UI.HtmlControls.HtmlInputRadioButton
 
         '''<summary>
-        '''UsernamePassword control.
+        '''UsernamePassword_RB control.
         '''</summary>
         '''<remarks>
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents UsernamePassword As Global.System.Web.UI.HtmlControls.HtmlInputRadioButton
+        Protected WithEvents UsernamePassword_RB As Global.System.Web.UI.HtmlControls.HtmlInputRadioButton
 
         '''<summary>
         '''Submit_BTN control.
@@ -57,7 +66,7 @@ Namespace Controls
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents Submit_BTN As Global.System.Web.UI.HtmlControls.HtmlInputButton
+        Protected WithEvents Submit_BTN As Global.System.Web.UI.WebControls.Button
 
         '''<summary>
         '''CustomTemplate_PH control.

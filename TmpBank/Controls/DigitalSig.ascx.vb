@@ -1,5 +1,4 @@
 ﻿Imports System.ComponentModel
-Imports System.Web.DynamicData
 Imports TmpBank.Utils
 
 
@@ -25,7 +24,7 @@ Namespace Controls
 
     Public Enum Action
         DISABLE = 0
-        HIDE
+        HIDE ' if action is set to HIDE use -wrapper class on whoever is wrapping your INPUT elements
         NONE
     End Enum
 
@@ -37,6 +36,7 @@ Namespace Controls
         Friend Sub New(ByVal randomTest As Integer)
             Me._randomTest = randomTest
             Debug.WriteLine("Container Initialized")
+
         End Sub
 
         Public Property Index() As Integer
@@ -47,9 +47,10 @@ Namespace Controls
     '   1- template
     '   2- attr
     '   3- default html
-    Public Class DigitalSig
+    Public Class DigitalSigControl
         Inherits System.Web.UI.UserControl
 
+        Public Property CssClass() As String = ""
         Public Property DisableDefaultMarkup() As Boolean = False
         'we cannot use defaultbutton on panel because the button is not visible now till
         'we render it into template  hence then need for WrappingPanel
@@ -57,13 +58,12 @@ Namespace Controls
         Public Property LoginOptions() As String() = {}
         Public Property Interval() As Integer
         Public Property Action() As Action = Action.DISABLE
-        Public Property WrapperId() As String
-        Public Property SubmitButtonId() As String
-        Public Property DebugWaitTime() As Integer
-        Public Property RequiredInputId() As String
-        Public Property DebugExpectedResult() As DigSigService.DigSigStatus
-        Public Property InputsNames() As List(Of String)
+        Public Property Wrapper() As Control
+        Public Property SubmitButton() As Control
+        Public Property RequiredInput() As Control
 
+        ' if the server already knows the required inputs then we can simply omit the input from client
+        Public Property HasRequiredInput() As Boolean = False
 
         Protected _CustomEvents As EventHandlerList
         Protected Shared ReadOnly Property _ValueChangedEventOwner As New Object()
@@ -116,6 +116,8 @@ Namespace Controls
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property SubmitTemplate() As ITemplate
 
+        ' Must include a server control that has an element with MaintAuthMethod attribute
+        ' also add a -wrapper class to whoever is wrapping all auth-methods radio buttons
         <TemplateContainer(GetType(CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
         <Browsable(True)>
@@ -132,7 +134,6 @@ Namespace Controls
             If DisableDefaultMarkup Then
                 DefaultMarkup_DIV.Visible = False
             End If
-
             DataBind()
 
         End Sub
@@ -140,6 +141,7 @@ Namespace Controls
 
         Protected Overrides Sub OnDataBinding(e As EventArgs)
             MyBase.OnDataBinding(e)
+            DigSigWrapper_DIV.Attributes("class") = DigSigWrapper_DIV.Attributes("class") + " " + CssClass
             ' we call set default attrs before addTemplates because that could override defualt settings
             SetDefaultForAttributes()
             _AddTemplates()
@@ -147,17 +149,14 @@ Namespace Controls
 
         Protected Sub SetJavascript()
             Dim scriptControl = New LiteralControl()
-            scriptControl.Text = $"<script> document.addEventListener('DOMContentLoaded', ()=> DigitalSignatureManager.createInstance('{WrapperId}', '{SubmitButtonId}', {Interval}, {DirectCast(Action, Integer)} , '{RequiredInputId}','{String.Join(",", InputsNames) }' , {DirectCast(DebugExpectedResult, Integer)}, {DebugWaitTime}) )</script>"
-            NamingContainer.Page.Header.Controls.Add(scriptControl)
+            scriptControl.Text = $"<script>  DigitalSignature.DigitalSignatureManager.createInstance('{Wrapper.ClientID}', '{SubmitButton.ClientID}', {Interval}, {DirectCast(Action, Integer)}, {If(HasRequiredInput, "true", "false")}, {2}, {10000}) </script>"
+            Page.Header.Controls.Add(scriptControl)
         End Sub
 
 
         Private Sub SetDefaultForAttributes()
-            If WrapperId Is Nothing Then
-                WrapperId = DigSigWrapper_DIV.ClientID
-            End If
-            If InputsNames Is Nothing Then
-                InputsNames = New List(Of String)
+            If Wrapper Is Nothing Then
+                Wrapper = DigSigWrapper_DIV
             End If
         End Sub
 
@@ -186,28 +185,31 @@ Namespace Controls
         Private Sub _SetupInputs(container As CustomMarkupContainer)
 
             If InputsTemplate IsNot Nothing Then
-                For Each value In container.FindControlByAttribute("InputView")
-                    InputsNames.Add(value.UniqueID)
-                Next
                 Dim requiredInputArr = container.FindControlByAttribute("RequiredInput").ToArray()
                 If requiredInputArr IsNot Nothing AndAlso requiredInputArr.Count <> 0 AndAlso requiredInputArr.Length = 1 Then
-                    RequiredInputId = requiredInputArr(0).ClientID
+                    RequiredInput = requiredInputArr(0)
                     NationalCode_UC.Visible = False
-                    Return
+                ElseIf Not HasRequiredInput Then
+                    ThrowAttrExpectedException("RequiredInput", "InputsTemplate")
                 End If
-                ThrowAttrExpectedException("RequiredInput", "InputsTemplate")
-                Return
-            ElseIf RequiredInputId IsNot Nothing Then
+            ElseIf RequiredInput IsNot Nothing Then
                 NationalCode_UC.Visible = False
             Else
-                RequiredInputId = NationalCode_UC.Input.ClientID
+                NationalCode_UC.Visible = False
             End If
 
         End Sub
 
 
         Private Sub _SetupAuth(container As CustomMarkupContainer)
-
+            If AuthMethodsTemplate IsNot Nothing Then
+                DefaultAuthMethodsMarkup.Visible = False
+                ' only the target radio button
+                Dim targetAuthMethods = container.FindControlByAttribute("TargetAuthMethod").ToArray()
+                If targetAuthMethods.Count <> 1 Then
+                    ThrowAttrExpectedException("TargetAuthMethod", "AuthMethodsTemplate")
+                End If
+            End If
         End Sub
 
         Private Sub _SetupFooter(container As CustomMarkupContainer)
@@ -218,7 +220,6 @@ Namespace Controls
             If SubmitTemplate IsNot Nothing Then
                 Dim buttons = container.FindControlByAttribute("SubmitView", True).ToArray()
                 If buttons.Count() > 0 AndAlso buttons.Count() = 1 Then
-                    SubmitButtonId = buttons(0).ClientID
                     Submit_BTN.Visible = False
                     If WrappingPanel IsNot Nothing Then
                         WrappingPanel.DefaultButton = buttons(0).UniqueID
@@ -226,13 +227,12 @@ Namespace Controls
                     Return
                 End If
                 ThrowAttrExpectedException("SubmitView", "SubmitTemplate")
-            ElseIf SubmitButtonId IsNot Nothing Then
+            ElseIf SubmitButton IsNot Nothing Then
                 Submit_BTN.Visible = False
                 If WrappingPanel IsNot Nothing Then
-                    WrappingPanel.DefaultButton = SubmitButtonId
+                    WrappingPanel.DefaultButton = SubmitButton.UniqueID
                 End If
             Else
-                SubmitButtonId = Submit_BTN.ClientID
                 If WrappingPanel IsNot Nothing Then
                     WrappingPanel.DefaultButton = Submit_BTN.UniqueID
                 End If
@@ -254,7 +254,7 @@ Namespace Controls
         End Sub
 
         Private Sub ThrowAttrExpectedException(attributeName As String, templateName As String)
-            Throw New Exception($"{attributeName} attribute expected on exactly one of the elements within {templateName}")
+            Throw New Exception($"{attributeName} attribute expected on one of the elements within {templateName}")
         End Sub
 
         Private Sub SubmitBtn_Click() Handles Submit_BTN.Click

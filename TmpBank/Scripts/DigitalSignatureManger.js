@@ -16,7 +16,9 @@ var Action;
 })(Action || (Action = {}));
 var DigitalSignatureManager = /** @class */ (function () {
     function DigitalSignatureManager() {
+        this.inputsAndWrappers = {};
         this._isSigMethodSelected = false;
+        this._hasInitialized = false;
     }
     DigitalSignatureManager.createInstance = function (wrapperId, submitBtnId, interval, action, requeiredInputId, inputsNames, debugExpectedResult, debugWaitTime) {
         var instance = new DigitalSignatureManager();
@@ -29,30 +31,45 @@ var DigitalSignatureManager = /** @class */ (function () {
         instance.interval = interval;
         instance.debugWaitTime = debugWaitTime;
         instance.debugExpectedResult = debugExpectedResult;
-        instance.init();
     };
     DigitalSignatureManager.getInstance = function (wrapperID) {
-        return DigitalSignatureManager.wrapperIdCodeToInstance[wrapperID];
+        var instance = DigitalSignatureManager.wrapperIdCodeToInstance[wrapperID];
+        instance.init();
+        return instance;
     };
     DigitalSignatureManager.prototype.init = function () {
+        var _this = this;
+        if (this._hasInitialized) {
+            return;
+        }
+        this._hasInitialized = true;
         this.wrapper = document.querySelector("#" + this.wrapperId);
         this.submitBtn = this.wrapper.querySelector("#" + this.submitBtnId);
-        this.digSigAuthMethods = this.wrapper.querySelector(".-auth-method-selector");
+        this.digSigAuthMethodsField = this.wrapper.querySelector(".-auth-method-selector");
         this.requiredInput = this.wrapper.querySelector(this.requiredInputId[0] === "." ? this.requiredInputId : "#" + this.requiredInputId);
+        this.inputsNames.forEach(function (name) {
+            if (name === "[" || name === "]" || name === "")
+                return;
+            var inputElem = _this.wrapper.querySelector("[name^=\"".concat(name, "\"]"));
+            _this.inputsAndWrappers[name] = { input: inputElem, wrapper: _this._getWrapperForElement(inputElem) };
+        });
         this.setAuthMethodsSelectedListeenrs();
         this.setSubmitListener();
     };
     DigitalSignatureManager.prototype.setSubmitListener = function () {
         var _this = this;
+        var savedOnSubmit = this.submitBtn.onclick;
+        this.submitBtn.onclick = null;
         this.submitBtn.addEventListener("click", function (e) {
             var onRequestStarted = _this.onRequestStarted;
             var debugExpectedResult = _this.debugExpectedResult;
             var requiredInput = _this.requiredInput;
             var waitTime = _this.debugWaitTime;
-            _this.disableWrapper();
             if (_this._isSigMethodSelected) {
+                _this.disableWrapper();
                 e.preventDefault();
                 e.stopPropagation();
+                e.stopImmediatePropagation();
                 $.ajax({
                     url: DigitalSignatureManager.baseApiUrl + "/InitiateDigSigVerification",
                     method: "POST",
@@ -70,19 +87,24 @@ var DigitalSignatureManager = /** @class */ (function () {
                         _this.enableWrapper();
                     }
                 });
+                return false;
             }
         });
+        savedOnSubmit && this.submitBtn.addEventListener("click", function (e) {
+            savedOnSubmit.call(e);
+        });
+        //  savedOnSubmit && this.submitBtn.addEventListener("click", savedOnSubmit);
     };
     DigitalSignatureManager.prototype.setAuthMethodsSelectedListeenrs = function () {
         var _this = this;
-        var digSigRb = this.digSigAuthMethods.querySelector(".-dig-sig-rb");
+        var digSigRb = this.digSigAuthMethodsField.querySelector(".-dig-sig-rb");
         // setting the inital state
-        this.digSigAuthMethods.querySelectorAll("input[type = radio]").forEach(function (element) {
+        this.digSigAuthMethodsField.querySelectorAll("input[type = radio]").forEach(function (element) {
             if (element.checked) {
                 _this.onAuthFieldMethodChanged(digSigRb, null, element);
             }
         });
-        this.digSigAuthMethods.addEventListener("change", function (e) { _this.onAuthFieldMethodChanged(digSigRb, e); });
+        this.digSigAuthMethodsField.addEventListener("change", function (e) { _this.onAuthFieldMethodChanged(digSigRb, e); });
     };
     // for fieldset authmethods html change event
     DigitalSignatureManager.prototype.onAuthFieldMethodChanged = function (digSigRb, e, selectedElement) {
@@ -103,36 +125,48 @@ var DigitalSignatureManager = /** @class */ (function () {
                     }
                 }
                 else if (this.action == Action.HIDE) {
+                    var elementWrapper = this._getWrapperForElement(this.requiredInput);
                     if (this._isSigMethodSelected) {
-                        this.requiredInput.classList.remove("display-none");
+                        elementWrapper.classList.remove("display-none");
                     }
                     else {
-                        this.requiredInput.classList.add("display-none");
+                        elementWrapper.classList.add("display-none");
                     }
                 }
                 this.inputsNames.forEach(function (name) {
                     if (name === "[" || name === "]" || name === "")
                         return;
-                    var inputElem = _this.wrapper.querySelector("[name=\"".concat(name, "\"]"));
+                    var inputAndWraper = _this.inputsAndWrappers[name];
                     if (_this.action == Action.DISABLE) {
-                        if (_this._isSigMethodSelected && inputElem !== _this.requiredInput) {
-                            inputElem.setAttribute("disabled", "true");
+                        if (_this._isSigMethodSelected && inputAndWraper.input !== _this.requiredInput) {
+                            inputAndWraper.input.setAttribute("disabled", "true");
                         }
                         else {
-                            inputElem.removeAttribute("disabled");
+                            inputAndWraper.input.removeAttribute("disabled");
                         }
                     }
                     else if (_this.action == Action.HIDE) {
-                        if (_this._isSigMethodSelected && inputElem !== _this.requiredInput) {
-                            inputElem.classList.add("display-none");
+                        if (_this._isSigMethodSelected && inputAndWraper.input !== _this.requiredInput) {
+                            inputAndWraper.wrapper.classList.add("display-none");
                         }
                         else {
-                            inputElem.classList.remove("display-none");
+                            inputAndWraper.wrapper.classList.remove("display-none");
                         }
                     }
                 });
             }
         }
+    };
+    // goes up the DOM heierachy till it hits a class with -wrapper class or reaches wrapper element
+    DigitalSignatureManager.prototype._getWrapperForElement = function (element) {
+        var result = element;
+        while (result && result != this.wrapper && !result.classList.contains("-wrapper")) {
+            result = result.parentElement;
+        }
+        if (!result || !result.classList.contains("-wrapper")) {
+            throw new DOMException("if action is set to HIDE then '-wrapper' class on any of ancestors of this element is expected: ".concat(element));
+        }
+        return result;
     };
     DigitalSignatureManager.prototype.checkRequestStatus = function () {
         var _this = this;
@@ -169,6 +203,9 @@ var DigitalSignatureManager = /** @class */ (function () {
     };
     DigitalSignatureManager.prototype.enableWrapper = function () {
         this.wrapper.style.opacity = "1";
+    };
+    DigitalSignatureManager.prototype.hasRequiredInput = function () {
+        return this.requiredInputId !== "-null-";
     };
     DigitalSignatureManager.baseApiUrl = "http://localhost:5288/DigitalSigService.asmx";
     DigitalSignatureManager.wrapperIdCodeToInstance = {};

@@ -10,9 +10,9 @@
 Option Strict On
 Option Explicit On
 
-Namespace Controls
+Namespace EndUserWebSite.Controls
 
-    Partial Public Class DigitalSig
+    Partial Public Class DigitalSigControl
 
         '''<summary>
         '''DigSigWrapper_DIV control.
@@ -42,13 +42,13 @@ Namespace Controls
         Protected WithEvents NationalCode_UC As Global.TmpBank.Controls.LabeldInput
 
         '''<summary>
-        '''DigitalSignature_RB control.
+        '''DefaultAuthMethodsMarkup control.
         '''</summary>
         '''<remarks>
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents DigitalSignature_RB As Global.System.Web.UI.HtmlControls.HtmlInputRadioButton
+        Protected WithEvents DefaultAuthMethodsMarkup As Global.System.Web.UI.HtmlControls.HtmlGenericControl
 
         '''<summary>
         '''UsernamePassword_RB control.
@@ -60,13 +60,13 @@ Namespace Controls
         Protected WithEvents UsernamePassword_RB As Global.System.Web.UI.HtmlControls.HtmlInputRadioButton
 
         '''<summary>
-        '''Submit_BTN control.
+        '''DigitalSignature_RB control.
         '''</summary>
         '''<remarks>
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents Submit_BTN As Global.System.Web.UI.WebControls.Button
+        Protected WithEvents DigitalSignature_RB As Global.System.Web.UI.HtmlControls.HtmlInputRadioButton
 
         '''<summary>
         '''CustomTemplate_PH control.
@@ -76,5 +76,14 @@ Namespace Controls
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
         Protected WithEvents CustomTemplate_PH As Global.System.Web.UI.WebControls.PlaceHolder
+
+        '''<summary>
+        '''Submit_BTN control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents Submit_BTN As Global.System.Web.UI.WebControls.Button
     End Class
 End Namespace

@@ -48,7 +48,7 @@ Namespace Pages
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents DigSig_UC As Global.TmpBank.Controls.DigitalSig
+        Protected WithEvents DigSig_UC As Global.TmpBank.Controls.DigitalSigControl
 
         '''<summary>
         '''LoginBtn_View control.

@@ -144,23 +144,23 @@ Namespace Controls
         Public Property Interval() As Integer
         Public Property Action() As Action = Action.DISABLE
         Public Property Wrapper() As Control
-        ' if outside of control and within the wrapper you had put RequiredInput or InputView attributes
-        Public Property HasReferencedSubmitButton() As Boolean = False
+
         ' if outside of control and within the wrapper you had put SubmitView attribute
         Public Property HasReferencedInputs() As Boolean = False
         ' if outside of control and within the wrapper you had put TargetAuthMethod attribute and
         ' a ds-wrapper on all of Auth methods radio buttons wrapper
         Public Property HasReferencedAuthMethods() As Boolean = False
-
+        ' if outside of control and within the wrapper you had put RequiredInput or InputView attributes
+        Public Property HasReferencedSubmitButton() As Boolean = False
         ' if the server already knows the required input then we can simply omit the input from client
         Public Property HasRequiredInput() As Boolean = False
 
 
         ' use these properties if you are using a control that generates multiple elements and setting attributes won't work
         Public Property InputsWrapperClass() As String = "-null-"
-        Public Property RequiredWrapperInputClass() As String = "-null-"
         Public Property AuthMethodsWrapperClass() As String = "-null-"
         Public Property TargetAuthMethodWrapperClass() As String = "-null-"
+        Public Property RequiredInputWrapperClass() As String = "-null-"
         Public Property SubmitButtonWrapperClass() As String = "-null-"
 
         Protected _CustomEvents As EventHandlerList
@@ -197,6 +197,13 @@ Namespace Controls
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property HeaderMarkupTemplate() As ITemplate
 
+        ' Must include a server control that has an element with MaintAuthMethod attribute
+        ' also add a -wrapper class to whoever is wrapping all auth-methods radio buttons
+        <TemplateContainer(GetType(CustomMarkupContainer))>
+        <TemplateInstance(TemplateInstance.Single)>
+        <Browsable(True)>
+        <PersistenceMode(PersistenceMode.InnerProperty)>
+        Public Property AuthMethodsTemplate() As ITemplate
 
         ' Inlcudes all of the inputs for our control(except submit) which should be flagged with InputView
         ' Required input id should be flaged with adding RequiredInput attribute(optinal InputView)
@@ -214,14 +221,6 @@ Namespace Controls
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property SubmitTemplate() As ITemplate
 
-        ' Must include a server control that has an element with MaintAuthMethod attribute
-        ' also add a -wrapper class to whoever is wrapping all auth-methods radio buttons
-        <TemplateContainer(GetType(CustomMarkupContainer))>
-        <TemplateInstance(TemplateInstance.Single)>
-        <Browsable(True)>
-        <PersistenceMode(PersistenceMode.InnerProperty)>
-        Public Property AuthMethodsTemplate() As ITemplate
-
         <TemplateContainer(GetType(CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
         <Browsable(True)>
@@ -229,16 +228,21 @@ Namespace Controls
         Public Property FooterMarkupTemplate() As ITemplate
 
         Protected Sub Control_Init() Handles Me.Init
-            If DisableDefaultMarkup Then
-                DefaultMarkup_DIV.Visible = False
-            End If
             DataBind()
-
         End Sub
 
 
         Protected Overrides Sub OnDataBinding(e As EventArgs)
             MyBase.OnDataBinding(e)
+
+            If DisableDefaultMarkup Then
+                DefaultMarkup_DIV.Visible = False
+            End If
+
+            If RequiredInputWrapperClass <> "-null-" Then
+                HasRequiredInput = True
+            End If
+
             DigSigWrapper_DIV.Attributes("class") = DigSigWrapper_DIV.Attributes("class") + " " + CssClass
             ' we call set default attrs before addTemplates because that could override defualt settings
             SetDefaultForAttributes()
@@ -254,7 +258,7 @@ Namespace Controls
                                         {DirectCast(Action, Integer)}, 
                                         {If(HasRequiredInput, "true", "false")},
                                         "".{AuthMethodsWrapperClass},.{TargetAuthMethodWrapperClass}"",
-                                        "".{InputsWrapperClass},.{RequiredWrapperInputClass}"",
+                                        "".{InputsWrapperClass},.{RequiredInputWrapperClass}"",
                                         "".{SubmitButtonWrapperClass}"",
                                         {2},
                                         {10000}
@@ -288,55 +292,54 @@ Namespace Controls
 
         End Sub
 
-
-
-        ' Todo: test if its htmlcontrol with no id set we can still access UniqueID and it exists
-        ' todo: requiredinput is not necessary to exist in InputsTemplate this could only be other auth methods inputs
-        Private Sub _SetupInputs(container As CustomMarkupContainer)
-
-            If InputsTemplate IsNot Nothing Then
-                Dim requiredInputArr = container.FindControlByAttribute("RequiredInput").ToArray()
-                If requiredInputArr IsNot Nothing AndAlso requiredInputArr.Count <> 0 AndAlso requiredInputArr.Length = 1 Then
-                    NationalCode_UC.Visible = False
-                ElseIf Not HasRequiredInput Then
-                    ThrowAttrExpectedException("RequiredInput", "InputsTemplate")
-                End If
-            ElseIf HasReferencedInputs Then
-                NationalCode_UC.Visible = False
-            Else
-                NationalCode_UC.Visible = False
-            End If
-
-        End Sub
-
-
-        Private Sub _SetupAuth(container As CustomMarkupContainer)
+        Private Sub _SetupAuthMethods(container As CustomMarkupContainer)
             If AuthMethodsTemplate IsNot Nothing Then
                 DefaultAuthMethodsMarkup.Visible = False
                 ' only the target radio button
-                Dim targetAuthMethods = container.FindControlByAttribute("TargetAuthMethod").ToArray()
-                If targetAuthMethods.Count <> 1 Then
-                    ThrowAttrExpectedException("TargetAuthMethod", "AuthMethodsTemplate")
+                If Not HasReferencedAuthMethods Then
+                    Dim targetAuthMethods = container.FindControlByAttribute("TargetAuthMethod").ToArray()
+                    If targetAuthMethods.Count <> 1 Then
+                        ThrowAttrExpectedException("TargetAuthMethod", "AuthMethodsTemplate")
+                    End If
                 End If
             ElseIf HasReferencedAuthMethods Then
                 DefaultAuthMethodsMarkup.Visible = False
             End If
         End Sub
 
-        Private Sub _SetupFooter(container As CustomMarkupContainer)
+        ' Todo: test if its htmlcontrol with no id set we can still access UniqueID and it exists
+        ' todo: requiredinput is not necessary to exist in InputsTemplate this could only be other auth methods inputs
+        Private Sub _SetupInputs(container As CustomMarkupContainer)
+            If InputsTemplate IsNot Nothing Then
+                DefaultInputsMarkup.Visible = False
+                If Not HasReferencedInputs Then
+                    Dim requiredInputArr = container.FindControlByAttribute("RequiredInput").ToArray()
+                    If HasRequiredInput AndAlso (requiredInputArr.Count <> 0 AndAlso requiredInputArr.Length = 1) Then
+                        ThrowAttrExpectedException("RequiredInput", "InputsTemplate")
+                    End If
+                End If
+            ElseIf HasReferencedInputs Then
+                DefaultInputsMarkup.Visible = False
+            Else
+                RequiredInputWrapperClass = "ds-required-input-wrapper"
+                InputsWrapperClass = "ds-inputs-wrapper"
+            End If
 
         End Sub
+
         ' sets up SubmitButtonId and creates SubmitTemplate if exists
         Private Sub _SetupSubmitButton(container As CustomMarkupContainer)
             If SubmitTemplate IsNot Nothing Then
-                Dim buttons = container.FindControlByAttribute("SubmitView", True).ToArray()
-                If buttons.Count() > 0 AndAlso buttons.Count() = 1 Then
-                    Submit_BTN.Visible = False
-                    If WrappingPanel IsNot Nothing Then
-                        WrappingPanel.DefaultButton = buttons(0).UniqueID
+                If Not HasReferencedSubmitButton Then
+                    Dim buttons = container.FindControlByAttribute("SubmitView", True).ToArray()
+                    If buttons.Count() > 0 AndAlso buttons.Count() = 1 Then
+                        Submit_BTN.Visible = False
+                        If WrappingPanel IsNot Nothing Then
+                            WrappingPanel.DefaultButton = buttons(0).UniqueID
+                        End If
+                    Else
+                        ThrowAttrExpectedException("SubmitView", "SubmitTemplate")
                     End If
-                Else
-                    ThrowAttrExpectedException("SubmitView", "SubmitTemplate")
                 End If
             ElseIf HasReferencedSubmitButton Then
                 Submit_BTN.Visible = False
@@ -356,13 +359,17 @@ Namespace Controls
 
         End Sub
 
+        Private Sub _SetupFooter(container As CustomMarkupContainer)
+
+        End Sub
+
         ' we set javascript after CustomMarkupContainer_Init because only then we have access to templated elements ids
         Private Sub CustomMarkupContainer_Init(container As CustomMarkupContainer, e As EventArgs)
 
             _SetupHeader(container)
             _SetupInputs(container)
             _SetupSubmitButton(container)
-            _SetupAuth(container)
+            _SetupAuthMethods(container)
             _SetupFooter(container)
 
             SetJavascript()

@@ -4,22 +4,15 @@
     "noEmitOnError": true,
     "removeComments": false,
     "sourceMap": true,
-    "declaration": false,
-    "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "target": "es2015",
     "lib": [ "es2017", "dom" ],
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true
+    "target": "es5"
   },
   "devDependencies": {
     "@types/jquery": "3.3.33"
   },
-  "compileOnSave": true,
   "exclude": [
     "node_modules",
     "wwwroot"
   ]
 }
+

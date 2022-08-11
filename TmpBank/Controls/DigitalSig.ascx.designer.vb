@@ -33,6 +33,15 @@ Namespace Controls
         Protected WithEvents DefaultMarkup_DIV As Global.System.Web.UI.HtmlControls.HtmlGenericControl
 
         '''<summary>
+        '''DefaultInputsMarkup control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents DefaultInputsMarkup As Global.System.Web.UI.HtmlControls.HtmlGenericControl
+
+        '''<summary>
         '''NationalCode_UC control.
         '''</summary>
         '''<remarks>
@@ -40,6 +49,15 @@ Namespace Controls
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
         Protected WithEvents NationalCode_UC As Global.TmpBank.Controls.LabeldInput
+
+        '''<summary>
+        '''Password_UC control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents Password_UC As Global.TmpBank.Controls.LabeldInput
 
         '''<summary>
         '''DefaultAuthMethodsMarkup control.

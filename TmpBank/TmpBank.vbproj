@@ -332,10 +332,10 @@
     <Content Include="Scripts\WebForms\WebParts.js" />
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="SignOut.aspx" />
-    <Content Include="tsconfig.json" />
     <Content Include="Web References\DigSigService\DigitalSigResponse.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </Content>
+    <Content Include="tsconfig.json" />
     <None Include="Web References\DigSigService\DigitalSigService.wsdl" />
     <Content Include="Web References\DigSigService\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>

@@ -17,7 +17,7 @@ var DigitalSignature;
     })(Action || (Action = {}));
     class DigitalSignatureManager {
         constructor() {
-            this.inputsAndWrappers = {};
+            this.inputsAndWrappers = [];
             this._isSigMethodSelected = false;
             this._hasInitialized = false;
         }
@@ -56,11 +56,11 @@ var DigitalSignature;
             Array.from(this.wrapper.querySelectorAll(!this.isClassNameNull(sentInputViewClassName) ?
                 sentInputViewClassName + " input" :
                 "[inputview]")).forEach((inputElement) => {
-                this.inputsAndWrappers[inputElement.toString()] = { input: inputElement, wrapper: this._getWrapperForElement(inputElement) };
+                this.inputsAndWrappers.push({ input: inputElement, wrapper: this._getWrapperForElement(inputElement) });
             });
             // setting up html radio button inputs that define the auth method
             const sentTargetAuthMethodClassName = this.authMethodsWrapperClasses.split(",")[0];
-            this.targetAuthMethodRb = document.querySelector(!this.isClassNameNull(sentTargetAuthMethodClassName) ?
+            this.targetAuthMethodRb = this.wrapper.querySelector(!this.isClassNameNull(sentTargetAuthMethodClassName) ?
                 sentTargetAuthMethodClassName + " input[type=radio]" :
                 "[targetauthmethod]");
             this.digSigAuthMethodsWrapper = this._getWrapperForElement(this.targetAuthMethodRb);
@@ -150,22 +150,21 @@ var DigitalSignature;
                             }
                         }
                     }
-                    for (const key in this.inputsAndWrappers) {
-                        const inputAndWrapper = this.inputsAndWrappers[key];
+                    for (const { input, wrapper } of this.inputsAndWrappers) {
                         if (this.action == Action.DISABLE) {
-                            if (this._isSigMethodSelected && inputAndWrapper.input !== this.requiredInput) {
-                                inputAndWrapper.input.setAttribute("disabled", "true");
+                            if (this._isSigMethodSelected && input !== this.requiredInput) {
+                                input.setAttribute("disabled", "true");
                             }
                             else {
-                                inputAndWrapper.input.removeAttribute("disabled");
+                                input.removeAttribute("disabled");
                             }
                         }
                         else if (this.action == Action.HIDE) {
-                            if (this._isSigMethodSelected && inputAndWrapper.input !== this.requiredInput) {
-                                inputAndWrapper.wrapper.classList.add("display-none");
+                            if (this._isSigMethodSelected && input !== this.requiredInput) {
+                                wrapper.classList.add("display-none");
                             }
                             else {
-                                inputAndWrapper.wrapper.classList.remove("display-none");
+                                wrapper.classList.remove("display-none");
                             }
                         }
                     }

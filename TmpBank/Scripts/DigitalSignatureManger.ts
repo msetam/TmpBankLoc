@@ -38,7 +38,7 @@ namespace DigitalSignature {
         private targetAuthMethodRb: HTMLInputElement;
         private requiredInput: HTMLInputElement;
         private digSigAuthMethodsWrapper: HTMLElement;
-        private inputsAndWrappers: { [key: string]: InputAndWrapper } = {};
+        private inputsAndWrappers: InputAndWrapper[] = [];
 
 
         private requestCode: number;
@@ -112,12 +112,12 @@ namespace DigitalSignature {
                     sentInputViewClassName + " input" :
                     "[inputview]"
             )).forEach((inputElement: HTMLInputElement) => {
-                this.inputsAndWrappers[inputElement.toString()] = { input: inputElement, wrapper: this._getWrapperForElement(inputElement) };
+                this.inputsAndWrappers.push({ input: inputElement, wrapper: this._getWrapperForElement(inputElement) });
             });
 
             // setting up html radio button inputs that define the auth method
             const sentTargetAuthMethodClassName = this.authMethodsWrapperClasses.split(",")[0];
-            this.targetAuthMethodRb = document.querySelector(
+            this.targetAuthMethodRb = this.wrapper.querySelector(
                 !this.isClassNameNull(sentTargetAuthMethodClassName) ?
                     sentTargetAuthMethodClassName + " input[type=radio]" :
                     "[targetauthmethod]") as HTMLInputElement;
@@ -176,12 +176,12 @@ namespace DigitalSignature {
             const authMethodClassName = this.authMethodsWrapperClasses.split(",")[0];
             Array.from((this.digSigAuthMethodsWrapper.querySelectorAll(
                 !this.isClassNameNull(authMethodClassName) ?
-                authMethodClassName + " input[type=radio]" :
-                "[authmethod]") as NodeListOf<HTMLInputElement>)).forEach((element) => {
-                if (element.checked) {
-                    this.onAuthFieldMethodChanged(this.targetAuthMethodRb, null, element);
-                }
-            })
+                    authMethodClassName + " input[type=radio]" :
+                    "[authmethod]") as NodeListOf<HTMLInputElement>)).forEach((element) => {
+                        if (element.checked) {
+                            this.onAuthFieldMethodChanged(this.targetAuthMethodRb, null, element);
+                        }
+                    })
 
             this.digSigAuthMethodsWrapper.addEventListener("change", (e) => { this.onAuthFieldMethodChanged(this.targetAuthMethodRb, e) });
         }
@@ -217,19 +217,18 @@ namespace DigitalSignature {
                         }
                     }
 
-                    for (const key in this.inputsAndWrappers) {
-                        const inputAndWrapper = this.inputsAndWrappers[key];
+                    for (const { input, wrapper } of this.inputsAndWrappers) {
                         if (this.action == Action.DISABLE) {
-                            if (this._isSigMethodSelected && inputAndWrapper.input !== this.requiredInput) {
-                                inputAndWrapper.input.setAttribute("disabled", "true");
+                            if (this._isSigMethodSelected && input !== this.requiredInput) {
+                                input.setAttribute("disabled", "true");
                             } else {
-                                inputAndWrapper.input.removeAttribute("disabled");
+                                input.removeAttribute("disabled");
                             }
                         } else if (this.action == Action.HIDE) {
-                            if (this._isSigMethodSelected && inputAndWrapper.input !== this.requiredInput) {
-                                inputAndWrapper.wrapper.classList.add("display-none");
+                            if (this._isSigMethodSelected && input !== this.requiredInput) {
+                                wrapper.classList.add("display-none");
                             } else {
-                                inputAndWrapper.wrapper.classList.remove("display-none");
+                                wrapper.classList.remove("display-none");
                             }
                         }
                     }

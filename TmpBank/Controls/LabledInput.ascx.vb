@@ -8,9 +8,7 @@
 
         Public Property InputType As TextBoxMode = TextBoxMode.SingleLine
         Public Property CssClass As String = ""
-
         Public Property Disabled As Boolean = False
-
         Public Property Input As TextBox
 
 
@@ -19,8 +17,7 @@
             Label_View.Text = Name
             Input_View.Attributes.Add("placeholder", PlaceHolderText)
             Input_View.Attributes.Add("name", Name.ToLower)
-            Input_View.CssClass = Input_View.CssClass + " " + CssClass
-            Input_View.CssClass = Input_View.CssClass + " " + CssClass
+            Wrapper.Attributes("class") = Wrapper.Attributes("class") + " " + CssClass
             If Disabled Then
                 Input_View.Attributes.Add("disabled", "")
             End If

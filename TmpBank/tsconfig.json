@@ -4,11 +4,20 @@
     "noEmitOnError": true,
     "removeComments": false,
     "sourceMap": true,
-    "target": "ES3"
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "lib": [ "es2017", "dom" ],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true
   },
   "devDependencies": {
     "@types/jquery": "3.3.33"
   },
+  "compileOnSave": true,
   "exclude": [
     "node_modules",
     "wwwroot"

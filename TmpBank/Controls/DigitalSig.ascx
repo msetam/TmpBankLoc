@@ -1,4 +1,4 @@
-﻿<%@ Control Language="vb" AutoEventWireup="false" CodeBehind="DigitalSigControl.ascx.vb" Inherits="EndUserWebSite.Controls.DigitalSigControl" %>
+﻿<%@ Control Language="vb" AutoEventWireup="false" CodeBehind="DigitalSigControl.ascx.vb" Inherits="TmpBank.Controls.DigitalSigControl" %>
 
 
 <%@ Register Src="~/Controls/LabledInput.ascx" TagName="LabledInput" TagPrefix="uc" %>
@@ -6,7 +6,7 @@
     /* after finilazing our design we remove this style tag and dig-sig-manager.js will add this to header dynamically*/
 
 
-    div.-ds-wrapper {
+    div.ds-wrapper {
         display: inline-block;
         width: 100%;
     }
@@ -60,29 +60,29 @@
     }
 </style>
 
-<div runat="server" id="DigSigWrapper_DIV" class="-ds-wrapper">
+<div runat="server" id="DigSigWrapper_DIV" class="ds-wrapper">
 
     <div runat="server" id="DefaultMarkup_DIV">
-        <uc:LabledInput runat="server" ID="NationalCode_UC" PlaceHolderText="کد ملی" Name="National Code" CssClass="-required-input -wrapper" Disabled="true" />
+        <uc:LabledInput runat="server" ID="NationalCode_UC" PlaceHolderText="کد ملی" Name="National Code" CssClass="ds-required-input ds-wrapper" Disabled="true" />
 
-        <fieldset runat="server" id="DefaultAuthMethodsMarkup" class="-wrapper" style="min-width: max-content">
+        <fieldset runat="server" id="DefaultAuthMethodsMarkup" class="ds-wrapper" style="min-width: max-content">
             <legend>روش ورود:</legend>
 
-            <div class="row">
+            <div class="row ds-wrapper">
 
 
-                <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
+                <div class="-auth-method col-sm-12 col-md-6 col-lg-6 ds-wrapper">
                     <label class="-ds-rb" for="<%= UsernamePassword_RB.ClientID %>">
                         <span>نام کاربری و پسورد </span>
                     </label>
-                    <input runat="server" type="radio" id="UsernamePassword_RB"  value="username and password" checked />
+                    <input runat="server" type="radio" id="UsernamePassword_RB"  value="username and password" checked AuthMethod/>
                 </div>
 
                 <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
                     <label class="-ds-rb" for="<%= DigitalSignature_RB.ClientID %>">
                         <span>امضای دیجیتالی </span>
                     </label>
-                    <input runat="server" type="radio" id="DigitalSignature_RB" class="-dig-sig-rb"  value="digital signature" TargetAuthMethod />
+                    <input runat="server" type="radio" id="DigitalSignature_RB" class="-ds-rb"  value="digital signature" TargetAuthMethod />
                 </div>
 
             </div>
@@ -91,7 +91,7 @@
 
         <asp:PlaceHolder runat="server" ID="CustomTemplate_PH" />
 
-        <asp:Button runat="server" ID="Submit_BTN" class="btn btn-success submit-btn" Text="Submit" />
+        <asp:Button runat="server" ID="Submit_BTN" class="btn btn-success submit-btn" Text="Submit" SubmitView />
     </div>
 
 </div>

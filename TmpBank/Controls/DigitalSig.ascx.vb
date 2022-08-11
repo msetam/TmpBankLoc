@@ -20,6 +20,92 @@ Imports TmpBank.Utils
 '   -* we add a schema to control that anyone adding a path to schema file the elements within our template Is validated against that
 
 
+'Use this to control for authentication/authorization and client-side automation which exposes some apis to manage your workflow
+'you get a onAuthMethodChanged(selectedAuthInputElement) event based on selecting an auth method radio button
+'how to use:
+'    * this control's markup and js and are wired up based on:
+'        1- templates
+'        2- attributes
+'        3- default markup
+'    in the order specified.
+'        1- if template is defiend then attrs and default markup are disabled and ingonred
+'        2- if template is not defiened and attrs are defined then default markup is disabled and ingonred
+'        3- if nor template and attrs are defined then default markup is generated and js is wired up to those elements
+
+'    **example usage with templates:
+'            ''
+'             <uc:DigitalSignatureManager runat="server"
+'                ID="DigitalSig1"
+'                Interval="1000"
+'                Wrapper="<%# Wrapper_View %>"
+'                WrappingPanel="<%# LoginWrapper3_PNL%>"
+'                DebugWaitTime="10000"
+'                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
+'                <InputsTemplate>
+'                    <input ... InputView>
+'                    <input ... InputView>
+'                    <input ... InputView InputView RequiredInput >
+'                </InputsTemplate>
+'                <SubmitTemplate>
+'                    my submit  template
+'                    <asp:Button ID="Button1" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
+'                </SubmitTemplate>
+'             </uc:DigitalSignatureManager>
+'            ''
+'        Wrapper is the control which wraps all of our inputs related to this control. We 'Wrapper's control id to disabled/enable it on starting/ending requests and do elements queries within it.
+'        WrapperPanel is used here because if we use SubmitTemplate then <asp:Button> is not visible to our <asp:Panel> when we try to set the DefaultButton attribute therefor we get a compilation error.
+'        we pass it to our control which then sets the correct button to asp:Panel automatically.
+'        Interval sets the interval of our request, which fires onRetry on client-side on every request. If its not set we just send the request once and fire onSuccess or onFailed
+'        based on the status of request.
+'        As you might have noticed there are two additional attributes defined on our controls like 'InputView', 'RequiredInput' and 'SubmitView'. In DigitalSignatureManager class These attributes are used
+'        to find these elements and wire up some events.
+
+'        If you are using a control that generates multiple controls, the additional attribute might not add to the view you wanted(or not get added at all), if that's the case we can use the control like:
+'            ''
+'             <uc:DigitalSignatureManager runat="server"
+'                ID="DigitalSig1"
+'                Interval="1000"
+'                Wrapper="<%# Wrapper_View %>"
+'                WrappingPanel="<%# LoginWrapper3_PNL%>"
+'                InputsWrapperClass="inputs-wrapper"
+'                RequiredInputClass="required-input" <!-- default value for RequiredInputClass is '-ds-requierd-input', 'im' stands for DigitalSignatureManager -->
+'                SubmitButtonWrapperClass="submit-input" <!-- default value for SubmitButtonClass is '-ds-submit-input', 'im' stands for DigitalSignatureManager -->
+'                DebugWaitTime="10000"
+'                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
+'                <InputsTemplate>
+'                    <LabelAndInput ... CssClass="inputs-wrapper" />
+'                    <LabelAndInput ... CssClass="inputs-wrapper required-input" />
+'                    <input ... InputView>
+'                </InputsTemplate>
+'                <SubmitTemplate>
+'                    my submit  template
+'                    <asp:ButtonComposite ID="Button1" runat="server" CssClass="btn btn-light submit-wrapper" Text="Login" SubmitView />
+'                </SubmitTemplate>
+'             </uc:DigitalSignatureManager>
+'            ''
+'        This way our AuthManger class will search within these classes to find our elements(recursily till it finds input with type=[button/submit] in SubmitTemplate or any type of input in InputsTemplate)
+'        ** examples with attribtutes and default submit button markup 
+'           ''
+'            <asp:Panel runat="server" ID="LoginWrapper2_PNL">
+'                <div class="login table-bordered form-horizontal">
+'                    <h2 class="h2">Login with default markup
+'                    </h2>
+'                    <uc:LabledInput ID="UserNameLogin2_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="-required-input" />
+'                    <uc:LabledInput ID="LabledInput4" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." runat="server" />
+
+'                    <uc:DigitalSig runat="server"
+'                        ID="DigSig2_UC"
+'                        Interval="1000"
+'                        Wrapper="<%# LoginWrapper2_PNL %>"
+'                        RequiredInputId="<%# UserNameLogin2_View.Input.ClientID %>"
+'                        WrappingPanel="<%# LoginWrapper2_PNL %>"
+'                        DebugWaitTime="10000"
+'                        DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.FAILED %>">
+'                    </uc:DigitalSig>
+'            ....
+'            ''
+
+
 Namespace Controls
 
     Public Enum Action
@@ -55,15 +141,27 @@ Namespace Controls
         'we cannot use defaultbutton on panel because the button is not visible now till
         'we render it into template  hence then need for WrappingPanel
         Public Property WrappingPanel() As Panel
-        Public Property LoginOptions() As String() = {}
         Public Property Interval() As Integer
         Public Property Action() As Action = Action.DISABLE
         Public Property Wrapper() As Control
-        Public Property SubmitButton() As Control
-        Public Property RequiredInput() As Control
+        ' if outside of control and within the wrapper you had put RequiredInput or InputView attributes
+        Public Property HasReferencedSubmitButton() As Boolean = False
+        ' if outside of control and within the wrapper you had put SubmitView attribute
+        Public Property HasReferencedInputs() As Boolean = False
+        ' if outside of control and within the wrapper you had put TargetAuthMethod attribute and
+        ' a ds-wrapper on all of Auth methods radio buttons wrapper
+        Public Property HasReferencedAuthMethods() As Boolean = False
 
-        ' if the server already knows the required inputs then we can simply omit the input from client
+        ' if the server already knows the required input then we can simply omit the input from client
         Public Property HasRequiredInput() As Boolean = False
+
+
+        ' use these properties if you are using a control that generates multiple elements and setting attributes won't work
+        Public Property InputsWrapperClass() As String = "-null-"
+        Public Property RequiredWrapperInputClass() As String = "-null-"
+        Public Property AuthMethodsWrapperClass() As String = "-null-"
+        Public Property TargetAuthMethodWrapperClass() As String = "-null-"
+        Public Property SubmitButtonWrapperClass() As String = "-null-"
 
         Protected _CustomEvents As EventHandlerList
         Protected Shared ReadOnly Property _ValueChangedEventOwner As New Object()
@@ -149,7 +247,19 @@ Namespace Controls
 
         Protected Sub SetJavascript()
             Dim scriptControl = New LiteralControl()
-            scriptControl.Text = $"<script>  DigitalSignature.DigitalSignatureManager.createInstance('{Wrapper.ClientID}', '{SubmitButton.ClientID}', {Interval}, {DirectCast(Action, Integer)}, {If(HasRequiredInput, "true", "false")}, {2}, {10000}) </script>"
+            scriptControl.Text = $"<script> 
+                                    DigitalSignature.DigitalSignatureManager.createInstance(
+                                        ""{Wrapper.ClientID}"", 
+                                        {Interval},
+                                        {DirectCast(Action, Integer)}, 
+                                        {If(HasRequiredInput, "true", "false")},
+                                        "".{AuthMethodsWrapperClass},.{TargetAuthMethodWrapperClass}"",
+                                        "".{InputsWrapperClass},.{RequiredWrapperInputClass}"",
+                                        "".{SubmitButtonWrapperClass}"",
+                                        {2},
+                                        {10000}
+                                    )
+                                </script>"
             Page.Header.Controls.Add(scriptControl)
         End Sub
 
@@ -163,9 +273,9 @@ Namespace Controls
         Private Sub _AddTemplates()
             Dim container = New CustomMarkupContainer(2)
             HeaderMarkupTemplate?.InstantiateIn(container)
+            AuthMethodsTemplate?.InstantiateIn(container)
             InputsTemplate?.InstantiateIn(container)
             SubmitTemplate?.InstantiateIn(container)
-            AuthMethodsTemplate?.InstantiateIn(container)
             FooterMarkupTemplate?.InstantiateIn(container)
             AddHandler container.Init, AddressOf CustomMarkupContainer_Init
             CustomTemplate_PH.Controls.Add(container)
@@ -187,12 +297,11 @@ Namespace Controls
             If InputsTemplate IsNot Nothing Then
                 Dim requiredInputArr = container.FindControlByAttribute("RequiredInput").ToArray()
                 If requiredInputArr IsNot Nothing AndAlso requiredInputArr.Count <> 0 AndAlso requiredInputArr.Length = 1 Then
-                    RequiredInput = requiredInputArr(0)
                     NationalCode_UC.Visible = False
                 ElseIf Not HasRequiredInput Then
                     ThrowAttrExpectedException("RequiredInput", "InputsTemplate")
                 End If
-            ElseIf RequiredInput IsNot Nothing Then
+            ElseIf HasReferencedInputs Then
                 NationalCode_UC.Visible = False
             Else
                 NationalCode_UC.Visible = False
@@ -209,6 +318,8 @@ Namespace Controls
                 If targetAuthMethods.Count <> 1 Then
                     ThrowAttrExpectedException("TargetAuthMethod", "AuthMethodsTemplate")
                 End If
+            ElseIf HasReferencedAuthMethods Then
+                DefaultAuthMethodsMarkup.Visible = False
             End If
         End Sub
 
@@ -224,13 +335,18 @@ Namespace Controls
                     If WrappingPanel IsNot Nothing Then
                         WrappingPanel.DefaultButton = buttons(0).UniqueID
                     End If
-                    Return
+                Else
+                    ThrowAttrExpectedException("SubmitView", "SubmitTemplate")
                 End If
-                ThrowAttrExpectedException("SubmitView", "SubmitTemplate")
-            ElseIf SubmitButton IsNot Nothing Then
+            ElseIf HasReferencedSubmitButton Then
                 Submit_BTN.Visible = False
                 If WrappingPanel IsNot Nothing Then
-                    WrappingPanel.DefaultButton = SubmitButton.UniqueID
+                    Dim buttons = container.FindControlByAttribute("SubmitView", True).ToArray()
+                    If buttons.Count() > 0 AndAlso buttons.Count() = 1 Then
+                        WrappingPanel.DefaultButton = Wrapper.FindControlByAttribute("SubmitView").ToArray()(0).UniqueID
+                    Else
+                        ThrowAttrExpectedException("SubmitView", "SubmitTemplate")
+                    End If
                 End If
             Else
                 If WrappingPanel IsNot Nothing Then

@@ -10,7 +10,7 @@
 Option Strict On
 Option Explicit On
 
-Namespace EndUserWebSite.Controls
+Namespace Controls
 
     Partial Public Class DigitalSigControl
 

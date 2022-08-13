@@ -1,0 +1,12 @@
+﻿<%@ Master Language="VB" AutoEventWireup="true" CodeBehind="Site.master.vb" Inherits="TmpBank.Pages.SiteMaster" MasterPageFile="Base.Master" %>
+
+
+<asp:Content runat="server" ContentPlaceHolderID="HeadContent">
+    <asp:ContentPlaceHolder runat="server" ID="HeadContent">
+    </asp:ContentPlaceHolder>
+</asp:Content>
+
+<asp:Content runat="server" ContentPlaceHolderID="MainContent">
+    <asp:ContentPlaceHolder runat="server" ID="MainContent">
+    </asp:ContentPlaceHolder>
+</asp:Content>

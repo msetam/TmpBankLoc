@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:tns="http://localhost:5288" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://localhost:5288" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://localhost:5288">
+      <s:element name="InitiateDigSigVerification">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="expectedResult" type="tns:DigSigStatus" />
+            <s:element minOccurs="1" maxOccurs="1" name="waitTime" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:simpleType name="DigSigStatus">
+        <s:restriction base="s:string">
+          <s:enumeration value="WAITING" />
+          <s:enumeration value="TIMED_OUT" />
+          <s:enumeration value="SUCCEEDED" />
+          <s:enumeration value="FAILED" />
+        </s:restriction>
+      </s:simpleType>
+      <s:element name="InitiateDigSigVerificationResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="InitiateDigSigVerificationResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckDigSigStatus">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="requestCode" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckDigSigStatusResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CheckDigSigStatusResult" type="tns:DigitalSigResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="DigitalSigResponse">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="Status" type="tns:DigSigStatus" />
+          <s:element minOccurs="1" maxOccurs="1" name="RequestCode" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="InitiateDigSigVerificationSoapIn">
+    <wsdl:part name="parameters" element="tns:InitiateDigSigVerification" />
+  </wsdl:message>
+  <wsdl:message name="InitiateDigSigVerificationSoapOut">
+    <wsdl:part name="parameters" element="tns:InitiateDigSigVerificationResponse" />
+  </wsdl:message>
+  <wsdl:message name="CheckDigSigStatusSoapIn">
+    <wsdl:part name="parameters" element="tns:CheckDigSigStatus" />
+  </wsdl:message>
+  <wsdl:message name="CheckDigSigStatusSoapOut">
+    <wsdl:part name="parameters" element="tns:CheckDigSigStatusResponse" />
+  </wsdl:message>
+  <wsdl:portType name="DigitalSigServiceSoap">
+    <wsdl:operation name="InitiateDigSigVerification">
+      <wsdl:input message="tns:InitiateDigSigVerificationSoapIn" />
+      <wsdl:output message="tns:InitiateDigSigVerificationSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckDigSigStatus">
+      <wsdl:input message="tns:CheckDigSigStatusSoapIn" />
+      <wsdl:output message="tns:CheckDigSigStatusSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="DigitalSigServiceSoap" type="tns:DigitalSigServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="InitiateDigSigVerification">
+      <soap:operation soapAction="http://localhost:5288/InitiateDigSigVerification" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckDigSigStatus">
+      <soap:operation soapAction="http://localhost:5288/CheckDigSigStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="DigitalSigServiceSoap12" type="tns:DigitalSigServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="InitiateDigSigVerification">
+      <soap12:operation soapAction="http://localhost:5288/InitiateDigSigVerification" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckDigSigStatus">
+      <soap12:operation soapAction="http://localhost:5288/CheckDigSigStatus" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="DigitalSigService">
+    <wsdl:port name="DigitalSigServiceSoap" binding="tns:DigitalSigServiceSoap">
+      <soap:address location="http://localhost:5288/DigitalSigService.asmx" />
+    </wsdl:port>
+    <wsdl:port name="DigitalSigServiceSoap12" binding="tns:DigitalSigServiceSoap12">
+      <soap12:address location="http://localhost:5288/DigitalSigService.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

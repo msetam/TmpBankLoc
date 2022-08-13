@@ -4,7 +4,8 @@
     "noEmitOnError": true,
     "removeComments": false,
     "sourceMap": true,
-    "target": "ES3"
+    "lib": [ "es2017", "dom" ],
+    "target": "es5"
   },
   "devDependencies": {
     "@types/jquery": "3.3.33"
@@ -14,3 +15,4 @@
     "wwwroot"
   ]
 }
+

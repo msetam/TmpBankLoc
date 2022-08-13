@@ -46,22 +46,48 @@
         <div class="login table-bordered form-horizontal">
             <h2 class="h2">Login with attr referencing outer view
             </h2>
-            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="-required-input -wrapper" />
-            <uc:LabledInput ID="PasswordLogin_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="-wrapper" runat="server" />
+
+
+            <fieldset runat="server" id="DefaultAuthMethodsMarkup" class="ds-wrapper" style="min-width: max-content">
+                <legend>Auth method</legend>
+
+                <div class="row ds-wrapper">
+
+
+                    <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
+                        <label class="-ds-rb" for="<%= UsernamePassword_RB.ClientID %>">
+                            <span>user name and pass</span>
+                        </label>
+                        <input runat="server" type="radio" id="UsernamePassword_RB" value="username and password" checked authmethod />
+                    </div>
+
+                    <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
+                        <label class="-ds-rb" for="<%= DigitalSignature_RB.ClientID %>">
+                            <span>Dig sig </span>
+                        </label>
+                        <input runat="server" type="radio" id="DigitalSignature_RB" class="-ds-rb" value="digital signature" targetauthmethod />
+                    </div>
+
+                </div>
+
+            </fieldset>
+
+            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
+            <uc:LabledInput ID="PasswordLogin_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
 
             <uc:DigitalSig runat="server"
                 ID="DigSig_UC"
                 Interval="1000"
-                WrapperId="<%# LoginWrapper_PNL.ClientID %>"
-                SubmitButton="<%#LoginBtn_View %>"
-                RequiredInput="<%# UserNameLogin_View.Input %>"
-                InputNames="<%# New List(Of String) From {PasswordLogin_View.UniqueID} %>"
-                NoRequiredInputs="false"
+                Wrapper="<%# LoginWrapper_PNL %>"
+                HasReferencedSubmitButton="True"
+                HasReferencedInputs="True"
+                InputsWrapperClass="input-wrapper"
+                RequiredInputWrapperClass="required-input-wrapper"
+                HasReferencedAuthMethods="True"
                 DebugWaitTime="10000"
                 DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
             </uc:DigitalSig>
-            <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" />
-
+            <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
 
             <% If Not _IsLoginValid Then %>
             <div class="row">
@@ -75,58 +101,52 @@
         </div>
     </asp:Panel>
 
-    <asp:Panel runat="server" ID="LoginWrapper2_PNL">
+
+    <asp:Panel runat="server" ID="Panel1" DefaultButton="Button1">
         <div class="login table-bordered form-horizontal">
-            <h2 class="h2">Login with default markup
+            <h2 class="h2">Login with attr/templated authmethods referenced inputs
             </h2>
-            <uc:LabledInput ID="UserNameLogin2_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="-required-input -wrapper" />
-            <uc:LabledInput ID="PasswordLogin2_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="-wrapper" runat="server" />
+
+            <uc:LabledInput ID="LabledInput1" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
+            <uc:LabledInput ID="LabledInput2" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
 
             <uc:DigitalSig runat="server"
-                ID="DigSig2_UC"
+                ID="DigitalSig1"
                 Interval="1000"
-                WrapperId="<%# LoginWrapper2_PNL.ClientID %>"
-                RequiredInput="<%# UserNameLogin2_View.Input %>"
-                InputNames="<%# new List(Of String) From {PasswordLogin2_View.UniqueID} %>"
-                WrappingPanel="<%# LoginWrapper2_PNL %>"
-                NoRequiredInputs="false"
+                Wrapper="<%# Panel1 %>"
+                HasReferencedSubmitButton="True"
+                HasReferencedInputs="True"
+                InputsWrapperClass="input-wrapper"
+                RequiredInputWrapperClass="required-input-wrapper"
                 DebugWaitTime="10000"
                 DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
+                <AuthMethodsTemplate>
+                    <fieldset runat="server" id="Fieldset1" class="ds-wrapper" style="min-width: max-content">
+                        <legend>Auth method</legend>
+
+                        <div class="row ds-wrapper">
+
+
+                            <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
+                                <label class="-ds-rb" for="<%= Radio1.ClientID %>">
+                                    <span>user name and pass</span>
+                                </label>
+                                <input runat="server" type="radio" id="Radio1" value="username and password" checked authmethod />
+                            </div>
+
+                            <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
+                                <label class="-ds-rb" for="<%= Radio2.ClientID %>">
+                                    <span>Dig sig </span>
+                                </label>
+                                <input runat="server" type="radio" id="Radio2" class="-ds-rb" value="digital signature" targetauthmethod />
+                            </div>
+
+                        </div>
+
+                    </fieldset>
+                </AuthMethodsTemplate>
             </uc:DigitalSig>
-
-            <% If Not _IsLoginValid Then %>
-            <div class="row">
-                <div class="alert alert-danger col-xs-11 col-md-6 col-lg-5" role="alert">
-                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                    <span class="sr-only">Login Validation Error:</span>
-                    <asp:Label ID="Label2" Text="" runat="server" />
-                </div>
-            </div>
-            <% End if %>
-        </div>
-    </asp:Panel>
-
-    <asp:Panel runat="server" ID="LoginWrapper3_PNL">
-        <div class="login table-bordered form-horizontal">
-            <h2 class="h2">Login with submit templates and default required input
-            </h2>
-            <uc:LabledInput ID="UserNameLogin3_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="-required-input -wrapper" />
-            <uc:LabledInput ID="PasswordLogin3_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="-wrapper" runat="server" />
-
-            <uc:DigitalSig runat="server"
-                ID="DigSig3_UC"
-                Interval="1000"
-                WrapperId="<%# LoginWrapper3_PNL.ClientID %>"
-                WrappingPanel="<%# LoginWrapper3_PNL%>"
-                InputNames="<%#New List(Of String) From {UserNameLogin3_View.UniqueID, PasswordLogin3_View.UniqueID} %>"
-                NoRequiredInputs="false"
-                DebugWaitTime="10000"
-                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
-                <SubmitTemplate>
-                    my submit  template
-                    <asp:Button ID="Button1" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
-                </SubmitTemplate>
-            </uc:DigitalSig>
+            <asp:Button ID="Button1" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
 
             <% If Not _IsLoginValid Then %>
             <div class="row">
@@ -140,39 +160,88 @@
         </div>
     </asp:Panel>
 
-    <asp:Panel runat="server" ID="LoginWrapper4_PNL">
+    <asp:Panel runat="server" ID="Panel2" DefaultButton="Button2">
         <div class="login table-bordered form-horizontal">
-            <h2 class="h2">Login with inputs template + submit template
+            <h2 class="h2">Login with attr/templated authmethods + inputs
             </h2>
-
-
             <uc:DigitalSig runat="server"
-                ID="DigSig4_UC"
+                ID="DigitalSig2"
                 Interval="1000"
-                WrapperId="<%# LoginWrapper4_PNL.ClientID %>"
-                WrappingPanel="<%# LoginWrapper4_PNL %>"
-                Action="<%# TmpBank.Controls.Action.HIDE %>"
-                NoRequiredInputs="false"
+                Wrapper="<%# Panel2 %>"
+                WrappingPanel="<%# Panel2 %>"
+                InputsWrapperClass="input-wrapper"
+                RequiredInputWrapperClass="required-input-wrapper"
                 DebugWaitTime="10000"
                 DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
-                <SubmitTemplate>
-                    my very custom submit template
-                    <asp:Button ID="Button2" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
-                </SubmitTemplate>
-                <InputsTemplate>
-                    <div data-random="because i can">
-                        <div class="form-group -wrapper">
-                            <asp:Label runat="server" ID="Label_View" CssClass="col-sm-2 control-label col-md-1" AsoosiatedControlId="UserNameLogin4_View" Text="Username" />
-                            <asp:TextBox ID="UserNameLogin4_View" CssClass="form-control col-sm-7 col-md-8" runat="server" InputView RequiredInput />
+                <AuthMethodsTemplate>
+                    <fieldset runat="server" id="Fieldset2" class="ds-wrapper" style="min-width: max-content">
+                        <legend>Auth method</legend>
+
+                        <div class="row ds-wrapper">
+
+
+                            <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
+                                <label class="-ds-rb" for="<%= Radio3.ClientID %>">
+                                    <span>user name and pass</span>
+                                </label>
+                                <input runat="server" type="radio" id="Radio3" value="username and password" checked authmethod />
+                            </div>
+
+                            <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
+                                <label class="-ds-rb" for="<%= Radio4.ClientID %>">
+                                    <span>Dig sig </span>
+                                </label>
+                                <input runat="server" type="radio" id="Radio4" class="-ds-rb" value="digital signature" targetauthmethod />
+                            </div>
+
                         </div>
 
-                        <div class="form-group -wrapper">
-                            <asp:Label runat="server" ID="Label4" CssClass="col-sm-2 control-label col-md-1" AsoosiatedControlId="PasswordLogin4_View" Text="Password" />
-                            <asp:TextBox ID="PasswordLogin4_View" CssClass="form-control col-sm-7 col-md-8" runat="server" InputView />
-                        </div>
-                    </div>
+                    </fieldset>
+                </AuthMethodsTemplate>
+                <InputsTemplate>
+                    <uc:LabledInput ID="LabledInput3" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
+                    <uc:LabledInput ID="LabledInput4" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
+                </InputsTemplate>
+                <SubmitTemplate>
+                    <p>custom template for submit yayy</p>
+                    <asp:Button ID="Button2" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
+                </SubmitTemplate>
+            </uc:DigitalSig>
+
+
+            <% If Not _IsLoginValid Then %>
+            <div class="row">
+                <div class="alert alert-danger col-xs-11 col-md-6 col-lg-5" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only">Login Validation Error:</span>
+                    <asp:Label ID="Label2" Text="" runat="server" />
+                </div>
+            </div>
+            <% End if %>
+        </div>
+    </asp:Panel>
+
+
+    <asp:Panel runat="server" ID="Panel3" DefaultButton="LoginBtn_View">
+        <div class="login table-bordered form-horizontal">
+            <h2 class="h2">Login with templated inputs and referenced submitbutton
+            </h2>
+            <uc:DigitalSig runat="server"
+                ID="DigitalSig3"
+                Interval="1000"
+                Wrapper="<%# Panel3 %>"
+                HasReferencedSubmitButton="True"
+                InputsWrapperClass="input-wrapper"
+                RequiredInputWrapperClass="required-input-wrapper"
+                HasRequiredInput="True"
+                DebugWaitTime="10000"
+                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
+                <InputsTemplate>
+                    <uc:LabledInput ID="LabledInput5" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
+                    <uc:LabledInput ID="LabledInput6" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
                 </InputsTemplate>
             </uc:DigitalSig>
+            <asp:Button ID="Button3" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
 
             <% If Not _IsLoginValid Then %>
             <div class="row">
@@ -186,82 +255,64 @@
         </div>
     </asp:Panel>
 
-
-
-    <asp:Panel runat="server" ID="LoginWrapper5_PNL">
+    <asp:Panel runat="server" ID="Panel4">
         <div class="login table-bordered form-horizontal">
-            <h2 class="h2">Login with inputs template + submit template
+            <h2 class="h2">Login with default templates
             </h2>
-
-
             <uc:DigitalSig runat="server"
-                ID="DigitalSig5"
+                ID="DigitalSig4"
                 Interval="1000"
-                WrapperId="<%# LoginWrapper5_PNL.ClientID %>"
-                WrappingPanel="<%# LoginWrapper5_PNL %>"
-                RequiredInput="<%# UserNameLogin5_View%>"
-                NoRequiredInputs="false"
-                InputNames="<%#New List(Of String) From {PasswordLogin5_View.UniqueID} %>"
-                Action="<%# TmpBank.Controls.Action.HIDE %>"
+                Wrapper="<%# Panel4 %>"
+                HasRequiredInput="True"
                 DebugWaitTime="10000"
                 DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
-                <SubmitTemplate>
-                    my very custom submit template
-                    <asp:Button ID="Button3" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
-                </SubmitTemplate>
             </uc:DigitalSig>
-
-            <div class="form-group -wrapper">
-                <asp:Label runat="server" ID="Label5" CssClass="col-sm-2 control-label col-md-1" AsoosiatedControlId="UserNameLogin5_View" Text="Username" />
-                <asp:TextBox ID="UserNameLogin5_View" CssClass="form-control col-sm-7 col-md-8" runat="server" InputView RequiredInput />
-            </div>
-
-            <div class="form-group -wrapper">
-                <asp:Label runat="server" ID="Label6" CssClass="col-sm-2 control-label col-md-1" AsoosiatedControlId="PasswordLogin5_View" Text="Password" />
-                <asp:TextBox ID="PasswordLogin5_View" CssClass="form-control col-sm-7 col-md-8" runat="server" InputView />
-            </div>
 
             <% If Not _IsLoginValid Then %>
             <div class="row">
                 <div class="alert alert-danger col-xs-11 col-md-6 col-lg-5" role="alert">
                     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
                     <span class="sr-only">Login Validation Error:</span>
-                    <asp:Label ID="Label7" Text="" runat="server" />
+                    <asp:Label ID="Label4" Text="" runat="server" />
                 </div>
             </div>
             <% End if %>
         </div>
     </asp:Panel>
 
+
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", () => {
 
-            const digitalSigManager = DigitalSignatureManager.getInstance("<%= DigSig4_UC.WrapperId %>");
+            const digitalSigManager = DigitalSignature.DigitalSignatureManager.getInstance("<%= DigSig_UC.Wrapper.ClientID %>");
 
-            digitalSigManager.onRequestStarted = () => {
-                console.log("request started");
-            }
+            digitalSigManager.setOnAuthEventsListener({
+                onAuthMethodChanged(currentAuth, wrapper) {
+                    console.log("changed auth method");
+                },
+                onFailed(error) {
+                    console.log(error);
+                },
+                onSuccess() {
+                    console.log("success");
+                },
+                onRequestStarted() {
+                    console.log("req started");
+                },
+                onRetry() {
+                    console.log("req retry");
+                }
+            });
 
-            digitalSigManager.onSuccess = () => {
-                console.log("succeeded");
-                console.log("redirectig to account home");
-                setTimeout(() => {
-                    document.location.reload();
-                }, 1000);
-            };
+            DigitalSignature.DigitalSignatureManager.getInstance("<%= DigitalSig1.Wrapper.ClientID %>");
+            DigitalSignature.DigitalSignatureManager.getInstance("<%= DigitalSig2.Wrapper.ClientID %>");
+            DigitalSignature.DigitalSignatureManager.getInstance("<%= DigitalSig3.Wrapper.ClientID %>");
+            DigitalSignature.DigitalSignatureManager.getInstance("<%= DigitalSig4.Wrapper.ClientID %>");
 
-            digitalSigManager.onFailed = (reason) => {
-                console.log("failed: " + reason);
-            }
-
-            digitalSigManager.onRetry = (response) => {
-                console.log("retrying: " + response)
-            };
-
-            const digitalSigManager1 = DigitalSignatureManager.getInstance("<%= DigSig_UC.WrapperId %>");
+            <%--            const digitalSigManager1 = DigitalSignatureManager.getInstance("<%= DigSig_UC.WrapperId %>");
             const digitalSigManager2 = DigitalSignatureManager.getInstance("<%= DigSig2_UC.WrapperId %>");
             const digitalSigManager3 = DigitalSignatureManager.getInstance("<%= DigSig3_UC.WrapperId %>");
-            const digitalSigManager5 = DigitalSignatureManager.getInstance("<%= DigitalSig5.WrapperId %>");
+            const digitalSigManager5 = DigitalSignatureManager.getInstance("<%= DigitalSig5.WrapperId %>");--%>
 
         });
     </script>

@@ -15,6 +15,15 @@ Namespace Controls
     Partial Public Class LabeldInput
 
         '''<summary>
+        '''Wrapper control.
+        '''</summary>
+        '''<remarks>
+        '''Auto-generated field.
+        '''To modify move field declaration from designer file to code-behind file.
+        '''</remarks>
+        Protected WithEvents Wrapper As Global.System.Web.UI.HtmlControls.HtmlGenericControl
+
+        '''<summary>
         '''Label_View control.
         '''</summary>
         '''<remarks>

@@ -97,7 +97,7 @@
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", () => {
 
-            const digitalSigManager = DigitalSignatureManager.getInstance("<%= DigSig_UC.WrapperId %>");
+            const digitalSigManager = DigitalSignatureManager.getInstance("<%= DigSig_UC.Wrapper.ClientID %>");
 
             const userNameInputLogin = document.querySelector("#<%= UserNameLogin_View.Input.ClientID %>");
             const psaswordInputLogin = document.querySelector("#<%= PasswordLogin_View.Input.ClientID %>");

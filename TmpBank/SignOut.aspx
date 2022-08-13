@@ -1,1 +1,0 @@
-﻿<%@ Page Language="vb" AutoEventWireup="false" MasterPageFile="~/Site.Master" CodeBehind="SignOut.aspx.vb" Inherits="TmpBank.Pages.SignOut" %>

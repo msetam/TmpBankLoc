@@ -1,8 +1,0 @@
-_bin_deployable
-bin
-obj
-App_Data
-.idea
-node_modules
-packages
-.vs

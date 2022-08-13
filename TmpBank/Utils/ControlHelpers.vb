@@ -19,6 +19,7 @@ Namespace Utils
             Dim current = _CreateControlWithAttr(control)
 
             Dim k = current.Attributes?(key)
+
             If k IsNot Nothing Then
                 Yield current.Control
                 If stopOnFirstHit Then Return

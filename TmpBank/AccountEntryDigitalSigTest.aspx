@@ -58,14 +58,14 @@
                         <label class="-ds-rb" for="<%= UsernamePassword_RB.ClientID %>">
                             <span>user name and pass</span>
                         </label>
-                        <input runat="server" type="radio" id="UsernamePassword_RB" value="username and password" checked authmethod />
+                        <input runat="server" type="radio" id="UsernamePassword_RB" value="username and password" checked AuthMethod />
                     </div>
 
                     <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
                         <label class="-ds-rb" for="<%= DigitalSignature_RB.ClientID %>">
                             <span>Dig sig </span>
                         </label>
-                        <input runat="server" type="radio" id="DigitalSignature_RB" class="-ds-rb" value="digital signature" targetauthmethod />
+                        <input runat="server" type="radio" id="DigitalSignature_RB" class="-ds-rb" value="digital signature" TargetAuthMethod />
                     </div>
 
                 </div>

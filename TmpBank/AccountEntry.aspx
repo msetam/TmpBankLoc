@@ -6,7 +6,6 @@
 <%@ Register Src="~/Controls/DigitalSig.ascx" TagName="DigitalSig" TagPrefix="uc" %>
 
 
-
 <asp:Content ContentPlaceHolderID="HeadContent" runat="server">
     <style>
         .login, .signup {
@@ -27,17 +26,13 @@
             }
     </style>
 
+    <script type="text/javascript" src="/Scripts/DigitalSignatureManger.js"></script>
+
 
 
 </asp:Content>
 
 <asp:Content ID="LoginForm" ContentPlaceHolderID="MainContent" runat="server">
-    <asp:ScriptManagerProxy runat="server">
-        <Scripts>
-            <asp:ScriptReference
-                Path="~/Scripts/DigitalSignatureManger.js" />
-        </Scripts>
-    </asp:ScriptManagerProxy>
     <h1 class="h1">Login/Signup Page
     </h1>
     <%--note:we cannot use defaultbutton on panel because the button is not visible now till we render it into template  hence then need for WrappingPanel--%>
@@ -45,21 +40,22 @@
         <div class="login table-bordered form-horizontal">
             <h2 class="h2">Login
             </h2>
-            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="-required-input" />
-            <uc:LabledInput ID="PasswordLogin_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." runat="server" />
 
-            
+            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
+            <uc:LabledInput ID="PasswordLogin_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
+
             <uc:DigitalSig runat="server"
-                           ID="DigSig_UC"
-                           Interval="1000"
-                           WrapperId="<%# LoginWrapper_PNL.ClientID %>"
-                           RequiredInputId="<%# UserNameLogin_View.Input.ClientID %>"
-                           WrappingPanel="<%# LoginWrapper_PNL %>"
-                           DebugWaitTime="10000"
-                           DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
+                ID="DigSig_UC"
+                Interval="1000"
+                Wrapper="<%# LoginWrapper_PNL %>"
+                HasReferencedInputs="True"
+                InputsWrapperClass="input-wrapper"
+                RequiredInputWrapperClass="required-input-wrapper"
+                DebugWaitTime="10000"
+                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
                 <SubmitTemplate>
                     my submit  template
-                    <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" SubmitView/>
+                    <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
                 </SubmitTemplate>
             </uc:DigitalSig>
 
@@ -97,43 +93,34 @@
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", () => {
 
-            const digitalSigManager = DigitalSignatureManager.getInstance("<%= DigSig_UC.Wrapper.ClientID %>");
+            const digitalSigManager = DigitalSignature.DigitalSignatureManager.getInstance("<%= DigSig_UC.Wrapper.ClientID %>");
 
-            const userNameInputLogin = document.querySelector("#<%= UserNameLogin_View.Input.ClientID %>");
-            const psaswordInputLogin = document.querySelector("#<%= PasswordLogin_View.Input.ClientID %>");
+            digitalSigManager.setOnAuthEventsListener({
 
-            digitalSigManager.onAuthMethodChanged = (element) => {
-                console.log("auth method changed(we can toggle visibilty now by checking isSigMethodSelected): " + digitalSigManager.isSigMethodSelected())
-                if (digitalSigManager.isSigMethodSelected()) {
-                    userNameInputLogin.setAttribute("disabled", true);
-                    psaswordInputLogin.setAttribute("disabled", true);
-                    digitalSigManager.requiredInput.removeAttribute("disabled");
-                } else {
-                    digitalSigManager.requiredInput.setAttribute("disabled", true);
-                    userNameInputLogin.removeAttribute("disabled");
-                    psaswordInputLogin.removeAttribute("disabled");
+                onRequestStarted: function () {
+                    console.log("started");
+                },
+                onTrackingDataReceived: function (data) {
+                    console.log(`tracking data recevied: ${data}`)
+                },
+                onRetry: function () {
+                    console.log("retrying");
+                },
+                onSuccess: function () {
+                    console.log("succeeded");
+                    console.log("redirectig to account home");
+                    setTimeout(() => {
+                        document.location.reload();
+                    }, 1000);
+                },
+                onFailed: function (errors) {
+                    console.log(errors);
+                },
+                onAuthMethodChanged(selectedAuthMethodInput) {
+                    console.log("auth method changed to " + selectedAuthMethodInput);
                 }
-            }
+            });
 
-            digitalSigManager.onRequestStarted = () => {
-                console.log("request started");
-            }
-
-            digitalSigManager.onSuccess = () => {
-                console.log("succeeded");
-                console.log("redirectig to account home");
-                setTimeout(() => {
-                    document.location.reload();
-                }, 1000);
-            };
-
-            digitalSigManager.onFailed = (reason) => {
-                console.log("failed: " + reason);
-            }
-
-            digitalSigManager.onRetry = (response) => {
-                console.log("retrying: " + response)
-            };
 
         });
     </script>

@@ -6,6 +6,7 @@ namespace DigitalSignature {
 
     interface IAuthManagerEvents {
         onSuccess();
+        onRequestTrackingDataReceived(data: any);
         onFailed(status: DigitalSignatureStatus);
         onRetry(status: DigitalSignatureStatus);
         onRequestStarted();
@@ -31,34 +32,52 @@ namespace DigitalSignature {
         wrapper: HTMLElement
     }
 
+    type DigitalSigRequestData = {
+        endpoint: string,
+        data: () => object
+    }
+
     export class DigitalSignatureManager {
 
-        private wrapper: HTMLDivElement;
-        private submitBtn: HTMLInputElement;
-        private targetAuthMethodRb: HTMLInputElement;
-        private requiredInput: HTMLInputElement;
-        private digSigAuthMethodsWrapper: HTMLElement;
-        private inputsAndWrappers: InputAndWrapper[] = [];
+        private _wrapper: HTMLDivElement;
+        private _submitBtn: HTMLInputElement;
+        private _targetAuthMethodRb: HTMLInputElement;
+        private _requiredInput: HTMLInputElement;
+        private _digSigAuthMethodsWrapper: HTMLElement;
+        private _inputsAndWrappers: InputAndWrapper[] = [];
 
 
-        private requestCode: number;
-        private action: Action;
-        private wrapperId: string;
-        private interval: number;
-        private hasRequiredInput: boolean;
-        private authMethodsWrapperClasses: string;// "auth-methods-class, target-auth-class" || -null-
-        private inputsWrapperClasses: string;// " inputs-class, required-input-class||-null-"
-        private submitWrapperClass: string;//   "class"
-        private debugWaitTime?: number;
-        private debugExpectedResult?: DigitalSignatureStatus;
+        private _requestCode: number;
+        private _action: Action;
+        private _wrapperId: string;
+        private _interval: number;
+        private _hasRequiredInput: boolean;
+        private _authMethodsWrapperClasses: string;// "auth-methods-class, target-auth-class" || -null-
+        private _inputsWrapperClasses: string;// " inputs-class, required-input-class||-null-"
+        private _submitWrapperClass: string;//   "class"
+        private _debugWaitTime?: number;
+        private _debugExpectedResult?: DigitalSignatureStatus;
 
-        private static baseApiUrl = "http://localhost:5288/DigitalSigService.asmx";
-        private static wrapperIdCodeToInstance: { [key: string]: DigitalSignatureManager } = {};
+        private static _baseApiUrl = "http://localhost:5288/DigitalSigService.asmx";
+        private static _wrapperIdCodeToInstance: { [key: string]: DigitalSignatureManager } = {};
 
         private _isSigMethodSelected = false;
         private _hasInitialized = false;
 
         private _authManagerListeners: IAuthManagerEvents;
+        private _digitalSignatureInitRequestData: DigitalSigRequestData;
+        private _digitalSignatureCheckStatusRequestData: DigitalSigRequestData;
+
+        private _defaultDigitalSignatureInitRequestData: DigitalSigRequestData = {
+            endpoint: `${DigitalSignatureManager._baseApiUrl}/init`,
+            data: () => { return { expectedResult: `${this._debugExpectedResult}`, data: `${this._requiredInput?.value}`, waitTime: `${this._debugWaitTime}` } }
+        };
+
+        private _defaultDigitalSignatureCheckStatusRequestData: DigitalSigRequestData = {
+            endpoint: `${DigitalSignatureManager._baseApiUrl}/check`,
+            data: () => { return { expectedResult: `${this._debugExpectedResult}`, data: `${this._requiredInput?.value}`, waitTime: `${this._debugWaitTime}` } }
+
+        };
 
         public static createInstance(
             wrapperId: string,
@@ -71,86 +90,86 @@ namespace DigitalSignature {
             debugExpectedResult?: DigitalSignatureStatus,
             debugWaitTime?: number) {
             const instance = new DigitalSignatureManager();
-            DigitalSignatureManager.wrapperIdCodeToInstance[wrapperId] = instance;
-            instance.wrapperId = wrapperId;
-            instance.interval = interval;
-            instance.action = action;
-            instance.hasRequiredInput = hasRequiredInput;
-            instance.authMethodsWrapperClasses = authMethodsWrapperClasses;
-            instance.inputsWrapperClasses = inputsWrapperClasses;
-            instance.submitWrapperClass = submitWrapperClass;
-            instance.debugWaitTime = debugWaitTime;
-            instance.debugExpectedResult = debugExpectedResult;
+            DigitalSignatureManager._wrapperIdCodeToInstance[wrapperId] = instance;
+            instance._wrapperId = wrapperId;
+            instance._interval = interval;
+            instance._action = action;
+            instance._hasRequiredInput = hasRequiredInput;
+            instance._authMethodsWrapperClasses = authMethodsWrapperClasses;
+            instance._inputsWrapperClasses = inputsWrapperClasses;
+            instance._submitWrapperClass = submitWrapperClass;
+            instance._debugWaitTime = debugWaitTime;
+            instance._debugExpectedResult = debugExpectedResult;
         }
 
 
         public static getInstance(wrapperID: string): DigitalSignatureManager {
-            const instance = DigitalSignatureManager.wrapperIdCodeToInstance[wrapperID];
-            instance.init();
+            const instance = DigitalSignatureManager._wrapperIdCodeToInstance[wrapperID];
+            instance._init();
             return instance;
         }
 
-        private init() {
+        private _init() {
             if (this._hasInitialized) {
                 return
             }
             this._hasInitialized = true;
-            this.wrapper = document.querySelector("#" + this.wrapperId) as HTMLDivElement;
-            this.submitBtn = this.wrapper.querySelector(!this.isClassNameNull(this.submitWrapperClass) ? this.submitWrapperClass + " input" : "[submitview]") as HTMLInputElement;
-            if (!this.submitBtn) {
-                this.wrapper.querySelector(this.submitWrapperClass + " button");
+            this._wrapper = document.querySelector("#" + this._wrapperId) as HTMLDivElement;
+            this._submitBtn = this._wrapper.querySelector(!this._isClassNameNull(this._submitWrapperClass) ? this._submitWrapperClass + " input" : "[submitview]") as HTMLInputElement;
+            if (!this._submitBtn) {
+                this._wrapper.querySelector(this._submitWrapperClass + " button");
             }
             // setting up html inputs that define the sent data
-            const sentRequiredInputClassName = this.inputsWrapperClasses.split(",")[1];
-            this.requiredInput = this.hasRequiredInput && this.wrapper.querySelector(
-                !this.isClassNameNull(sentRequiredInputClassName) ? sentRequiredInputClassName + " input" : "[requiredinput]"
+            const sentRequiredInputClassName = this._inputsWrapperClasses.split(",")[1];
+            this._requiredInput = this._hasRequiredInput && this._wrapper.querySelector(
+                !this._isClassNameNull(sentRequiredInputClassName) ? sentRequiredInputClassName + " input" : "[requiredinput]"
             ) as HTMLInputElement;
 
-            const sentInputViewClassName = this.inputsWrapperClasses.split(",")[0];
-            Array.from(this.wrapper.querySelectorAll(
-                !this.isClassNameNull(sentInputViewClassName) ?
+            const sentInputViewClassName = this._inputsWrapperClasses.split(",")[0];
+
+            this._wrapper.querySelectorAll(
+                !this._isClassNameNull(sentInputViewClassName) ?
                     sentInputViewClassName + " input" :
                     "[inputview]"
-            )).forEach((inputElement: HTMLInputElement) => {
-                this.inputsAndWrappers.push({ input: inputElement, wrapper: this._getWrapperForElement(inputElement) });
+            ).forEach((inputElement: HTMLInputElement) => {
+                this._inputsAndWrappers.push({ input: inputElement, wrapper: this._getWrapperForElement(inputElement) });
             });
 
             // setting up html radio button inputs that define the auth method
-            const sentTargetAuthMethodClassName = this.authMethodsWrapperClasses.split(",")[0];
-            this.targetAuthMethodRb = this.wrapper.querySelector(
-                !this.isClassNameNull(sentTargetAuthMethodClassName) ?
+            const sentTargetAuthMethodClassName = this._authMethodsWrapperClasses.split(",")[0];
+            this._targetAuthMethodRb = this._wrapper.querySelector(
+                !this._isClassNameNull(sentTargetAuthMethodClassName) ?
                     sentTargetAuthMethodClassName + " input[type=radio]" :
                     "[targetauthmethod]") as HTMLInputElement;
-            this.digSigAuthMethodsWrapper = this._getWrapperForElement(this.targetAuthMethodRb) as HTMLElement;
-            this.setAuthMethodsSelectedListeners();
+            this._digSigAuthMethodsWrapper = this._getWrapperForElement(this._targetAuthMethodRb) as HTMLElement;
+            this._setAuthMethodsSelectedListeners();
 
-            this.setSubmitListener();
+            this._setSubmitListener();
         }
 
-        private setSubmitListener() {
-            const savedOnSubmit = this.submitBtn.onclick;
-            this.submitBtn.onclick = null;
-            this.submitBtn.addEventListener("click", e => {
+        private _setSubmitListener() {
+            const savedOnClick = this._submitBtn.onclick;
+            this._submitBtn.onclick = null;
+            savedOnClick && this._submitBtn.removeEventListener("click", savedOnClick);
+            this._submitBtn.addEventListener("click", e => {
                 const listeners = this._authManagerListeners;
-                const debugExpectedResult = this.debugExpectedResult;
-                const requiredInput = this.requiredInput;
-                const waitTime = this.debugWaitTime;
                 if (this._isSigMethodSelected) {
                     this.disableWrapper();
                     e.preventDefault();
                     e.stopPropagation();
                     e.stopImmediatePropagation();
+                    listeners && typeof listeners.onRequestStarted === 'function' && listeners.onRequestStarted();
                     $.ajax({
-                        url: DigitalSignatureManager.baseApiUrl + "/InitiateDigSigVerification",
+                        url: this._digitalSignatureInitRequestData?.endpoint ? this._digitalSignatureInitRequestData.endpoint : this._defaultDigitalSignatureInitRequestData.endpoint,
                         method: "POST",
-                        data: `{ "expectedResult": "${debugExpectedResult}", data: "${requiredInput?.value}", waitTime: ${waitTime} }`,
+                        data: JSON.stringify(this._digitalSignatureInitRequestData?.data ? this._digitalSignatureInitRequestData.data : this._defaultDigitalSignatureInitRequestData.data),
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
                         success: (response) => {
                             console.log(response.d);
-                            this.requestCode = response.d;
-                            this.checkRequestStatus();
-                            listeners && typeof listeners.onRequestStarted === 'function' && listeners.onRequestStarted();
+                            this._requestCode = response.d;
+                            listeners && typeof listeners.onRequestTrackingDataReceived === 'function' && listeners.onRequestTrackingDataReceived(response);
+                            this._checkRequestStatus();
                         },
                         error: (errors) => {
                             console.log(errors);
@@ -158,57 +177,63 @@ namespace DigitalSignature {
                         },
                         /*               xhrFields: { withCrendtials: true },*/
                     });
-                    return false;
                 }
+                return false;
             });
-            savedOnSubmit && this.submitBtn.addEventListener("click", (e) => {
-                savedOnSubmit.call(e);
-            });
-            //  savedOnSubmit && this.submitBtn.addEventListener("click", savedOnSubmit);
+            savedOnClick && (this._submitBtn.onclick = savedOnClick);
         }
 
-        public setOnAuthEventsListener(authEvents: IAuthManagerEvents) {
-            this._authManagerListeners = authEvents;
+        public setOnAuthEventsListener(authEventsImpl: IAuthManagerEvents) {
+            this._authManagerListeners = authEventsImpl;
         }
 
-        private setAuthMethodsSelectedListeners() {
+        public setDigitalSignatureInitRequestsData(digitalSigRequestsData: DigitalSigRequestData) {
+            this._digitalSignatureInitRequestData = digitalSigRequestsData;
+        }
+
+        public setDigitalSignatureCheckStatusRequestsData(digitalSigRequestsData: DigitalSigRequestData) {
+            this._digitalSignatureCheckStatusRequestData = digitalSigRequestsData;
+        }
+
+
+        private _setAuthMethodsSelectedListeners() {
             // setting the initial state
-            const authMethodClassName = this.authMethodsWrapperClasses.split(",")[0];
-            Array.from((this.digSigAuthMethodsWrapper.querySelectorAll(
-                !this.isClassNameNull(authMethodClassName) ?
+            const authMethodClassName = this._authMethodsWrapperClasses.split(",")[0];
+            (this._digSigAuthMethodsWrapper.querySelectorAll(
+                !this._isClassNameNull(authMethodClassName) ?
                     authMethodClassName + " input[type=radio]" :
-                    "[authmethod]") as NodeListOf<HTMLInputElement>)).forEach((element) => {
+                    "[authmethod]") as NodeListOf<HTMLInputElement>).forEach((element) => {
                         if (element.checked) {
-                            this.onAuthFieldMethodChanged(this.targetAuthMethodRb, null, element);
+                            this._onAuthFieldMethodChanged(this._targetAuthMethodRb, null, element);
                         }
                     })
 
-            this.digSigAuthMethodsWrapper.addEventListener("change", (e) => { this.onAuthFieldMethodChanged(this.targetAuthMethodRb, e) });
+            this._digSigAuthMethodsWrapper.addEventListener("change", (e) => { this._onAuthFieldMethodChanged(this._targetAuthMethodRb, e) });
         }
 
         // for fieldset authmethods html change event
-        private onAuthFieldMethodChanged(digSigRb: HTMLInputElement, e?: Event, selectedElement?: HTMLInputElement) {
+        private _onAuthFieldMethodChanged(digSigRb: HTMLInputElement, e?: Event, selectedElement?: HTMLInputElement) {
             this._isSigMethodSelected = digSigRb.checked;
             const element = selectedElement ? selectedElement : e.target as HTMLElement
             if (element instanceof HTMLInputElement && (element as HTMLInputElement).type === "radio") {
                 this._authManagerListeners && typeof this._authManagerListeners.onAuthMethodChanged === 'function'
                     && this._authManagerListeners.onAuthMethodChanged(element);
 
-                if (this.action != Action.NONE) {
+                if (this._action != Action.NONE) {
 
 
-                    if (this.hasRequiredInput) {
+                    if (this._hasRequiredInput) {
                         // first we set the state of requiredInput because it can also be an input for other auth methods(flaggs: RequiredView InputView)
                         // so iterating over inputsnames enables it again
-                        if (this.action == Action.DISABLE) {
+                        if (this._action == Action.DISABLE) {
                             if (this._isSigMethodSelected) {
-                                this.requiredInput.removeAttribute("disabled");
+                                this._requiredInput.removeAttribute("disabled");
                             } else {
-                                this.requiredInput.setAttribute("disabled", "true");
+                                this._requiredInput.setAttribute("disabled", "true");
 
                             }
-                        } else if (this.action == Action.HIDE) {
-                            const elementWrapper = this._getWrapperForElement(this.requiredInput) as HTMLElement;
+                        } else if (this._action == Action.HIDE) {
+                            const elementWrapper = this._getWrapperForElement(this._requiredInput) as HTMLElement;
                             if (this._isSigMethodSelected) {
                                 elementWrapper.classList.remove("display-none");
                             } else {
@@ -217,15 +242,15 @@ namespace DigitalSignature {
                         }
                     }
 
-                    for (const { input, wrapper } of this.inputsAndWrappers) {
-                        if (this.action == Action.DISABLE) {
-                            if (this._isSigMethodSelected && input !== this.requiredInput) {
+                    for (const { input, wrapper } of this._inputsAndWrappers) {
+                        if (this._action == Action.DISABLE) {
+                            if (this._isSigMethodSelected && input !== this._requiredInput) {
                                 input.setAttribute("disabled", "true");
                             } else {
                                 input.removeAttribute("disabled");
                             }
-                        } else if (this.action == Action.HIDE) {
-                            if (this._isSigMethodSelected && input !== this.requiredInput) {
+                        } else if (this._action == Action.HIDE) {
+                            if (this._isSigMethodSelected && input !== this._requiredInput) {
                                 wrapper.classList.add("display-none");
                             } else {
                                 wrapper.classList.remove("display-none");
@@ -239,7 +264,7 @@ namespace DigitalSignature {
         // goes up the DOM heierachy till it hits a class with ds-wrapper class or reaches wrapper element
         private _getWrapperForElement(element: HTMLElement): HTMLElement {
             let result = element;
-            while (result && result != this.wrapper && !result.classList.contains("ds-wrapper")) {
+            while (result && result != this._wrapper && !result.classList.contains("ds-wrapper")) {
                 result = result.parentElement;
             }
             if (!result || !result.classList.contains("ds-wrapper")) {
@@ -248,26 +273,25 @@ namespace DigitalSignature {
             return result;
         }
 
-        private checkRequestStatus() {
-            const listeners = this._authManagerListeners;
+        private _checkRequestStatus() {
             $.ajax({
-                url: DigitalSignatureManager.baseApiUrl + "/CheckDigSigStatus",
+                url: this._digitalSignatureCheckStatusRequestData?.endpoint ? this._digitalSignatureCheckStatusRequestData.endpoint : this._defaultDigitalSignatureCheckStatusRequestData.endpoint,
                 method: "POST",
-                data: `{ "requestCode": ${this.requestCode}}`,
+                data: JSON.stringify(this._digitalSignatureCheckStatusRequestData?.data ? this._digitalSignatureCheckStatusRequestData.data : this._defaultDigitalSignatureCheckStatusRequestData.data),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: (response: any) => {
                     if (response.d.Status == DigitalSignatureStatus.SUCCEEDED) {
-                        listeners && typeof listeners.onSuccess === 'function' && listeners.onSuccess();
+                        this._authManagerListeners && typeof this._authManagerListeners.onSuccess === 'function' && this._authManagerListeners.onSuccess();
                     } else if (response.d.Status == DigitalSignatureStatus.FAILED || response.d.Status == DigitalSignatureStatus.TIMED_OUT) {
-                        listeners && typeof listeners.onFailed === 'function' && listeners.onFailed(response.d.Status);
+                        this._authManagerListeners && typeof this._authManagerListeners.onFailed === 'function' && this._authManagerListeners.onFailed(response.d.Status);
                         this.enableWrapper();
                     } else {
-                        setTimeout(() => { this.checkRequestStatus(); }, this.interval);
-                        listeners && typeof listeners.onRetry === 'function' && listeners.onRetry(response.d.Status)
+                        setTimeout(() => { this._checkRequestStatus(); }, this._interval);
+                        this._authManagerListeners && typeof this._authManagerListeners.onRetry === 'function' && this._authManagerListeners.onRetry(response.d.Status)
                     }
                 },
-                error: (errors: any) => listeners && typeof listeners.onFailed === 'function' && listeners.onFailed(errors),
+                error: (errors: any) => this._authManagerListeners && typeof this._authManagerListeners.onFailed === 'function' && this._authManagerListeners.onFailed(errors),
                 //xhrFields: {
                 //    withCredentials: true
                 //}
@@ -281,7 +305,7 @@ namespace DigitalSignature {
         }
 
         public static isFirstInstance() {
-            return Object.keys(DigitalSignatureManager.wrapperIdCodeToInstance).length == 0;
+            return Object.keys(DigitalSignatureManager._wrapperIdCodeToInstance).length == 0;
         }
 
 
@@ -290,24 +314,23 @@ namespace DigitalSignature {
         }
 
         public disableWrapper() {
-            this.submitBtn.setAttribute("disabled", "true");
-            this.wrapper.style.opacity = "0.3";
+            // @ts-ignore
+            backgroundPopupCommon();
         }
 
         public enableWrapper() {
-            this.submitBtn.removeAttribute("disabled");
-            this.wrapper.style.opacity = "1";
+            setTimeout(() => {
+                console.warn("remove timeout for enableWrapper in production");
+                // @ts-ignore
+                UndobackgroundPopup();
+            }, 5000);
+
         }
 
-        private isClassNameNull(className: string): boolean {
+        private _isClassNameNull(className: string): boolean {
             return className === ".-null-";
         }
 
     }
 
-}
-
-if (DigitalSignature.DigitalSignatureManager.isFirstInstance()) {
-    console.log("adding default DigitalSignature control styles")
-    DigitalSignature.DigitalSignatureManager.addDefaultStyle();
 }

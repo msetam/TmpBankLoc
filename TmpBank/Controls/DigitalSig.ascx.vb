@@ -164,7 +164,7 @@ Namespace Controls
         Public Property SubmitButtonWrapperClass() As String = "-null-"
 
         Protected _CustomEvents As EventHandlerList
-        Protected Shared ReadOnly Property _ValueChangedEventOwner As New Object()
+        Private Shared ReadOnly Property _SubmitEventOwner As New Object()
 
 
         Protected ReadOnly Property CustomEvents As EventHandlerList
@@ -179,13 +179,13 @@ Namespace Controls
 
         Public Custom Event Submit As EventHandler
             AddHandler(value As EventHandler)
-                CustomEvents.AddHandler(_ValueChangedEventOwner, value)
+                CustomEvents.AddHandler(_SubmitEventOwner, value)
             End AddHandler
             RemoveHandler(value As EventHandler)
-                CustomEvents.RemoveHandler(_ValueChangedEventOwner, value)
+                CustomEvents.RemoveHandler(_SubmitEventOwner, value)
             End RemoveHandler
             RaiseEvent(sender As Object, e As EventArgs)
-                DirectCast(Events(_ValueChangedEventOwner), EventHandler)?.Invoke(sender, e)
+                DirectCast(Events(_SubmitEventOwner), EventHandler)?.Invoke(sender, e)
             End RaiseEvent
         End Event
 
@@ -252,7 +252,7 @@ Namespace Controls
         Protected Sub SetJavascript()
             Dim scriptControl = New LiteralControl()
             scriptControl.Text = $"<script> 
-                                    DigitalSignature.DigitalSignatureManager.createInstance(
+                                     DigitalSignature.DigitalSignatureManager.createInstance(
                                         ""{Wrapper.ClientID}"", 
                                         {Interval},
                                         {DirectCast(Action, Integer)}, 
@@ -262,7 +262,7 @@ Namespace Controls
                                         "".{SubmitButtonWrapperClass}"",
                                         {2},
                                         {10000}
-                                    )
+                                    );
                                 </script>"
             Page.Header.Controls.Add(scriptControl)
         End Sub
@@ -293,33 +293,42 @@ Namespace Controls
         End Sub
 
         Private Sub _SetupAuthMethods(container As CustomMarkupContainer)
-            If AuthMethodsTemplate IsNot Nothing Then
+
+            If HasReferencedAuthMethods Or AuthMethodsTemplate IsNot Nothing Then
                 DefaultAuthMethodsMarkup.Visible = False
-                ' only the target radio button
-                If Not HasReferencedAuthMethods Then
-                    Dim targetAuthMethods = container.FindControlByAttribute("TargetAuthMethod").ToArray()
+                Dim wrapper = If(HasReferencedAuthMethods, Me.Wrapper, container)
+                ' checking target auth method
+                If _IsClassNameNull(TargetAuthMethodWrapperClass) Then
+                    Dim targetAuthMethods = wrapper.FindControlByAttribute("TargetAuthMethod", True).ToArray()
                     If targetAuthMethods.Count <> 1 Then
                         ThrowAttrExpectedException("TargetAuthMethod", "AuthMethodsTemplate")
                     End If
                 End If
-            ElseIf HasReferencedAuthMethods Then
-                DefaultAuthMethodsMarkup.Visible = False
+
+                'checking other methods
+                If _IsClassNameNull(AuthMethodsWrapperClass) Then
+                    Dim targetAuthMethods = wrapper.FindControlByAttribute("AuthMethod", True).ToArray()
+                    If targetAuthMethods.Count = 0 Then
+                        ThrowAttrExpectedException("AuthMethod", "AuthMethodsTemplate")
+                    End If
+                End If
             End If
         End Sub
 
         ' Todo: test if its htmlcontrol with no id set we can still access UniqueID and it exists
         ' todo: requiredinput is not necessary to exist in InputsTemplate this could only be other auth methods inputs
         Private Sub _SetupInputs(container As CustomMarkupContainer)
-            If InputsTemplate IsNot Nothing Then
+            If HasReferencedInputs Or InputsTemplate IsNot Nothing Then
                 DefaultInputsMarkup.Visible = False
-                If Not HasReferencedInputs Then
-                    Dim requiredInputArr = container.FindControlByAttribute("RequiredInput").ToArray()
-                    If HasRequiredInput AndAlso (requiredInputArr.Count <> 0 AndAlso requiredInputArr.Length = 1) Then
+                Dim wrapper = If(HasReferencedInputs, Me.Wrapper, container)
+                ' required input
+                ' other inputs are optional so no checks for them
+                If _IsClassNameNull(RequiredInputWrapperClass) Then
+                    Dim requiredInputArr = wrapper.FindControlByAttribute("RequiredInput", True).ToArray()
+                    If HasRequiredInput AndAlso requiredInputArr.Count <> 1 Then
                         ThrowAttrExpectedException("RequiredInput", "InputsTemplate")
                     End If
                 End If
-            ElseIf HasReferencedInputs Then
-                DefaultInputsMarkup.Visible = False
             Else
                 RequiredInputWrapperClass = "ds-required-input-wrapper"
                 InputsWrapperClass = "ds-inputs-wrapper"
@@ -329,29 +338,21 @@ Namespace Controls
 
         ' sets up SubmitButtonId and creates SubmitTemplate if exists
         Private Sub _SetupSubmitButton(container As CustomMarkupContainer)
-            If SubmitTemplate IsNot Nothing Then
-                If Not HasReferencedSubmitButton Then
-                    Dim buttons = container.FindControlByAttribute("SubmitView", True).ToArray()
-                    If buttons.Count() > 0 AndAlso buttons.Count() = 1 Then
-                        Submit_BTN.Visible = False
-                        If WrappingPanel IsNot Nothing Then
-                            WrappingPanel.DefaultButton = buttons(0).UniqueID
-                        End If
-                    Else
+            If HasReferencedSubmitButton Or SubmitTemplate IsNot Nothing Then
+                Submit_BTN.Visible = False
+                Dim wrapper = If(HasReferencedSubmitButton, Me.Wrapper, container)
+                If _IsClassNameNull(SubmitButtonWrapperClass) Then
+                    Dim buttons = wrapper.FindControlByAttribute("SubmitView", True).ToArray()
+                    If buttons.Count() <> 1 Then
                         ThrowAttrExpectedException("SubmitView", "SubmitTemplate")
                     End If
-                End If
-            ElseIf HasReferencedSubmitButton Then
-                Submit_BTN.Visible = False
-                If WrappingPanel IsNot Nothing Then
-                    Dim buttons = container.FindControlByAttribute("SubmitView", True).ToArray()
-                    If buttons.Count() > 0 AndAlso buttons.Count() = 1 Then
-                        WrappingPanel.DefaultButton = Wrapper.FindControlByAttribute("SubmitView").ToArray()(0).UniqueID
-                    Else
-                        ThrowAttrExpectedException("SubmitView", "SubmitTemplate")
+                    AddHandler DirectCast(buttons(0), Button).Click, AddressOf SubmitBtn_Click
+                    If WrappingPanel IsNot Nothing Then
+                        WrappingPanel.DefaultButton = buttons(0).UniqueID
                     End If
                 End If
             Else
+                AddHandler Submit_BTN.Click, AddressOf SubmitBtn_Click
                 If WrappingPanel IsNot Nothing Then
                     WrappingPanel.DefaultButton = Submit_BTN.UniqueID
                 End If
@@ -380,9 +381,14 @@ Namespace Controls
             Throw New Exception($"{attributeName} attribute expected on one of the elements within {templateName}")
         End Sub
 
-        Private Sub SubmitBtn_Click() Handles Submit_BTN.Click
+        Private Sub SubmitBtn_Click()
             RaiseEvent Submit(Me, New EventArgs())
         End Sub
+
+
+        Private Function _IsClassNameNull(className As String) As Boolean
+            Return className = "-null-"
+        End Function
 
     End Class
 End Namespace

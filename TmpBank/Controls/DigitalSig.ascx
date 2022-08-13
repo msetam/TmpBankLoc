@@ -6,11 +6,6 @@
     /* after finilazing our design we remove this style tag and dig-sig-manager.js will add this to header dynamically*/
 
 
-    div.ds-wrapper {
-        display: inline-block;
-        width: 100%;
-    }
-
     div fieldset .-ds-rb {
         display: inline-block;
         padding-right: 20px;
@@ -54,7 +49,7 @@
         margin-top: 5% !important;
     }
 
-    .display-none {
+    .ds-wrapper.display-none {
         display: none;
     }
 </style>

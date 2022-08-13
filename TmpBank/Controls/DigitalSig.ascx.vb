@@ -186,7 +186,7 @@ Namespace Controls
                 CustomEvents.RemoveHandler(_SubmitEventOwner, value)
             End RemoveHandler
             RaiseEvent(sender As Object, e As EventArgs)
-                DirectCast(Events(_SubmitEventOwner), EventHandler)?.Invoke(sender, e)
+                DirectCast(CustomEvents(_SubmitEventOwner), EventHandler)?.Invoke(sender, e)
             End RaiseEvent
         End Event
 

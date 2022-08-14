@@ -1,4 +1,5 @@
 ﻿Imports System.ComponentModel
+Imports System.Web.DynamicData
 Imports TmpBank.Utils
 
 
@@ -164,7 +165,7 @@ Namespace Controls
         Public Property SubmitButtonWrapperClass() As String = "-null-"
 
         Protected _CustomEvents As EventHandlerList
-        Private Shared ReadOnly Property _SubmitEventOwner As New Object()
+        Private Shared ReadOnly Property _SubmitEventOwner = "_SubmitEventOwner"
 
 
         Protected ReadOnly Property CustomEvents As EventHandlerList
@@ -185,7 +186,7 @@ Namespace Controls
                 CustomEvents.RemoveHandler(_SubmitEventOwner, value)
             End RemoveHandler
             RaiseEvent(sender As Object, e As EventArgs)
-                DirectCast(Events(_SubmitEventOwner), EventHandler)?.Invoke(sender, e)
+                DirectCast(CustomEvents(_SubmitEventOwner), EventHandler)?.Invoke(sender, e)
             End RaiseEvent
         End Event
 

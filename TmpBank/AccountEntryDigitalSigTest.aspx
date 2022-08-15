@@ -58,14 +58,14 @@
                         <label class="-ds-rb" for="<%= UsernamePassword_RB.ClientID %>">
                             <span>user name and pass</span>
                         </label>
-                        <input runat="server" type="radio" id="UsernamePassword_RB" value="username and password" checked AuthMethod />
+                        <input runat="server" type="radio" id="UsernamePassword_RB" value="username and password" checked DSAuthMethod />
                     </div>
 
                     <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
                         <label class="-ds-rb" for="<%= DigitalSignature_RB.ClientID %>">
                             <span>Dig sig </span>
                         </label>
-                        <input runat="server" type="radio" id="DigitalSignature_RB" class="-ds-rb" value="digital signature" TargetAuthMethod />
+                        <input runat="server" type="radio" id="DigitalSignature_RB" class="-ds-rb" value="digital signature" DSTargetAuthMethod />
                     </div>
 
                 </div>
@@ -83,11 +83,9 @@
                 HasReferencedInputs="True"
                 InputsWrapperClass="input-wrapper"
                 RequiredInputWrapperClass="required-input-wrapper"
-                HasReferencedAuthMethods="True"
-                DebugWaitTime="10000"
-                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
+                HasReferencedAuthMethods="True">
             </uc:DigitalSig>
-            <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
+            <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" DSSubmitView />
 
             <% If Not _IsLoginValid Then %>
             <div class="row">
@@ -131,14 +129,14 @@
                                 <label class="-ds-rb" for="<%= Radio1.ClientID %>">
                                     <span>user name and pass</span>
                                 </label>
-                                <input runat="server" type="radio" id="Radio1" value="username and password" checked authmethod />
+                                <input runat="server" type="radio" id="Radio1" value="username and password" checked dsauthmethod />
                             </div>
 
                             <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
                                 <label class="-ds-rb" for="<%= Radio2.ClientID %>">
                                     <span>Dig sig </span>
                                 </label>
-                                <input runat="server" type="radio" id="Radio2" class="-ds-rb" value="digital signature" targetauthmethod />
+                                <input runat="server" type="radio" id="Radio2" class="-ds-rb" value="digital signature" dstargetauthmethod />
                             </div>
 
                         </div>
@@ -146,7 +144,7 @@
                     </fieldset>
                 </AuthMethodsTemplate>
             </uc:DigitalSig>
-            <asp:Button ID="Button1" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
+            <asp:Button ID="Button1" runat="server" CssClass="btn btn-light" Text="Login" DSSubmitView />
 
             <% If Not _IsLoginValid Then %>
             <div class="row">
@@ -184,14 +182,14 @@
                                 <label class="-ds-rb" for="<%= Radio3.ClientID %>">
                                     <span>user name and pass</span>
                                 </label>
-                                <input runat="server" type="radio" id="Radio3" value="username and password" checked authmethod />
+                                <input runat="server" type="radio" id="Radio3" value="username and password" checked dsauthmethod />
                             </div>
 
                             <div class="-auth-method col-sm-12 col-md-6 col-lg-6">
                                 <label class="-ds-rb" for="<%= Radio4.ClientID %>">
                                     <span>Dig sig </span>
                                 </label>
-                                <input runat="server" type="radio" id="Radio4" class="-ds-rb" value="digital signature" targetauthmethod />
+                                <input runat="server" type="radio" id="Radio4" class="-ds-rb" value="digital signature" dstargetauthmethod />
                             </div>
 
                         </div>
@@ -204,7 +202,7 @@
                 </InputsTemplate>
                 <SubmitTemplate>
                     <p>custom template for submit yayy</p>
-                    <asp:Button ID="Button2" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
+                    <asp:Button ID="Button2" runat="server" CssClass="btn btn-light" Text="Login" DSSubmitView />
                 </SubmitTemplate>
             </uc:DigitalSig>
 
@@ -241,7 +239,7 @@
                     <uc:LabledInput ID="LabledInput6" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
                 </InputsTemplate>
             </uc:DigitalSig>
-            <asp:Button ID="Button3" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
+            <asp:Button ID="Button3" runat="server" CssClass="btn btn-light" Text="Login" DSSubmitView />
 
             <% If Not _IsLoginValid Then %>
             <div class="row">

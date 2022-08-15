@@ -55,24 +55,24 @@ var DigitalSignature;
             }
             this._hasInitialized = true;
             this._wrapper = document.querySelector("#" + this._wrapperId);
-            this._submitBtn = this._wrapper.querySelector(!this._isClassNameNull(this._submitWrapperClass) ? this._submitWrapperClass + " input" : "[submitview]");
+            this._submitBtn = this._wrapper.querySelector(!this._isClassNameNull(this._submitWrapperClass) ? this._submitWrapperClass + " input" : "[dssubmitview]");
             if (!this._submitBtn) {
                 this._wrapper.querySelector(this._submitWrapperClass + " button");
             }
             // setting up html inputs that define the sent data
             var sentRequiredInputClassName = this._inputsWrapperClasses.split(",")[1];
-            this._requiredInput = this._hasRequiredInput && this._wrapper.querySelector(!this._isClassNameNull(sentRequiredInputClassName) ? sentRequiredInputClassName + " input" : "[requiredinput]");
+            this._requiredInput = this._hasRequiredInput && this._wrapper.querySelector(!this._isClassNameNull(sentRequiredInputClassName) ? sentRequiredInputClassName + " input" : "[dsrequiredinput]");
             var sentInputViewClassName = this._inputsWrapperClasses.split(",")[0];
             this._wrapper.querySelectorAll(!this._isClassNameNull(sentInputViewClassName) ?
                 sentInputViewClassName + " input" :
-                "[inputview]").forEach(function (inputElement) {
+                "[dsinputview]").forEach(function (inputElement) {
                 _this._inputsAndWrappers.push({ input: inputElement, wrapper: _this._getWrapperForElement(inputElement) });
             });
             // setting up html radio button inputs that define the auth method
             var sentTargetAuthMethodClassName = this._authMethodsWrapperClasses.split(",")[0];
             this._targetAuthMethodRb = this._wrapper.querySelector(!this._isClassNameNull(sentTargetAuthMethodClassName) ?
                 sentTargetAuthMethodClassName + " input[type=radio]" :
-                "[targetauthmethod]");
+                "[dstargetauthmethod]");
             this._digSigAuthMethodsWrapper = this._getWrapperForElement(this._targetAuthMethodRb);
             this._setAuthMethodsSelectedListeners();
             this._setSubmitListener();
@@ -129,7 +129,7 @@ var DigitalSignature;
             var authMethodClassName = this._authMethodsWrapperClasses.split(",")[0];
             this._digSigAuthMethodsWrapper.querySelectorAll(!this._isClassNameNull(authMethodClassName) ?
                 authMethodClassName + " input[type=radio]" :
-                "[authmethod]").forEach(function (element) {
+                "[dsauthmethod]").forEach(function (element) {
                 if (element.checked) {
                     _this._onAuthFieldMethodChanged(_this._targetAuthMethodRb, null, element);
                 }
@@ -189,6 +189,9 @@ var DigitalSignature;
         };
         // goes up the DOM heierachy till it hits a class with ds-wrapper class or reaches wrapper element
         DigitalSignatureManager.prototype._getWrapperForElement = function (element) {
+            if (!element) {
+                throw new Error("element searching for 'ds-wrapper' does not exist. you may have wrong referenced/template structure");
+            }
             var result = element;
             while (result && result != this._wrapper && !result.classList.contains("ds-wrapper")) {
                 result = result.parentElement;

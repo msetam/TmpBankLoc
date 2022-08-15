@@ -1,5 +1,4 @@
 ﻿Imports System.ComponentModel
-Imports System.Web.DynamicData
 Imports TmpBank.Utils
 
 
@@ -164,8 +163,13 @@ Namespace Controls
         Public Property RequiredInputWrapperClass() As String = "-null-"
         Public Property SubmitButtonWrapperClass() As String = "-null-"
 
+        ' If you are referencing custom user control then your classes are most probably a property which DigitalSig is not aware of(we search for CssClass or a property starting with Css), if that's the case
+        ' you can disable UserControl checks with this attribute
+        Public Property SkipClassChecks() As Boolean = False
+
+
         Protected _CustomEvents As EventHandlerList
-        Private Shared ReadOnly Property _SubmitEventOwner = "_SubmitEventOwner"
+        Private Shared ReadOnly Property _SubmitEventName As String = "submitClickedEvent"
 
 
         Protected ReadOnly Property CustomEvents As EventHandlerList
@@ -180,13 +184,13 @@ Namespace Controls
 
         Public Custom Event Submit As EventHandler
             AddHandler(value As EventHandler)
-                CustomEvents.AddHandler(_SubmitEventOwner, value)
+                CustomEvents.AddHandler(_SubmitEventName, value)
             End AddHandler
             RemoveHandler(value As EventHandler)
-                CustomEvents.RemoveHandler(_SubmitEventOwner, value)
+                CustomEvents.RemoveHandler(_SubmitEventName, value)
             End RemoveHandler
             RaiseEvent(sender As Object, e As EventArgs)
-                DirectCast(CustomEvents(_SubmitEventOwner), EventHandler)?.Invoke(sender, e)
+                DirectCast(CustomEvents(_SubmitEventName), EventHandler)?.Invoke(sender, e)
             End RaiseEvent
         End Event
 
@@ -194,15 +198,15 @@ Namespace Controls
         ' Custom Templates
         <TemplateContainer(GetType(CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
-        <Browsable(True)>
+        <Browsable(False)>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property HeaderMarkupTemplate() As ITemplate
 
         ' Must include a server control that has an element with MaintAuthMethod attribute
-        ' also add a -wrapper class to whoever is wrapping all auth-methods radio buttons
+        ' also add a ds-wrapper class to whoever is wrapping all auth methods radio buttons
         <TemplateContainer(GetType(CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
-        <Browsable(True)>
+        <Browsable(False)>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property AuthMethodsTemplate() As ITemplate
 
@@ -210,7 +214,7 @@ Namespace Controls
         ' Required input id should be flaged with adding RequiredInput attribute(optinal InputView)
         <TemplateContainer(GetType(CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
-        <Browsable(True)>
+        <Browsable(False)>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property InputsTemplate() As ITemplate
 
@@ -218,13 +222,13 @@ Namespace Controls
         ' Must include a server control that has an element with SubmitView attribute
         <TemplateContainer(GetType(CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
-        <Browsable(True)>
+        <Browsable(False)>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property SubmitTemplate() As ITemplate
 
         <TemplateContainer(GetType(CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
-        <Browsable(True)>
+        <Browsable(False)>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property FooterMarkupTemplate() As ITemplate
 
@@ -260,9 +264,7 @@ Namespace Controls
                                         {If(HasRequiredInput, "true", "false")},
                                         "".{AuthMethodsWrapperClass},.{TargetAuthMethodWrapperClass}"",
                                         "".{InputsWrapperClass},.{RequiredInputWrapperClass}"",
-                                        "".{SubmitButtonWrapperClass}"",
-                                        {2},
-                                        {10000}
+                                        "".{SubmitButtonWrapperClass}""
                                     );
                                 </script>"
             Page.Header.Controls.Add(scriptControl)
@@ -297,37 +299,72 @@ Namespace Controls
 
             If HasReferencedAuthMethods Or AuthMethodsTemplate IsNot Nothing Then
                 DefaultAuthMethodsMarkup.Visible = False
-                Dim wrapper = If(HasReferencedAuthMethods, Me.Wrapper, container)
-                ' checking target auth method
-                If _IsClassNameNull(TargetAuthMethodWrapperClass) Then
-                    Dim targetAuthMethods = wrapper.FindControlByAttribute("TargetAuthMethod", True).ToArray()
-                    If targetAuthMethods.Count <> 1 Then
-                        ThrowAttrExpectedException("TargetAuthMethod", "AuthMethodsTemplate")
+
+                If Constants.IsDebugMode Then
+
+                    Dim wrapper = If(HasReferencedAuthMethods, Me.Wrapper, container)
+                    ' checking target auth method
+                    If _IsClassNameNull(TargetAuthMethodWrapperClass) Then
+                        Dim targetAuthMethods As Utils.ControlWithAttribute() = wrapper.FindControlByAttribute("DSTargetAuthMethod", stopOnFirstHit:=True).ToArray()
+                        If targetAuthMethods.Count <> 1 Then
+                            ThrowAttrExpectedException("DSTargetAuthMethod", "AuthMethodsTemplate")
+                        End If
+                    ElseIf Not SkipClassChecks Then
+                        Dim targetAuthMethods As Utils.ControlWithCssClass() = _GetControlsWithClass(wrapper, TargetAuthMethodWrapperClass, True)
+                        If targetAuthMethods.Count <> 1 Then
+                            ThrowAttrExpectedException($"CssClass with value = {TargetAuthMethodWrapperClass}", wrapper.ClientID)
+                        End If
                     End If
+
+
+                    'checking other methods
+                    If _IsClassNameNull(AuthMethodsWrapperClass) Then
+                        Dim authMethods As Utils.ControlWithAttribute() = wrapper.FindControlByAttribute("DSAuthMethod", stopOnFirstHit:=True).ToArray()
+                        If authMethods.Count = 0 Then
+                            ThrowAttrExpectedException("DSAuthMethod", "AuthMethodsTemplate")
+                        End If
+                    ElseIf Not SkipClassChecks Then
+                        Dim authMethods As Utils.ControlWithCssClass()
+                        authMethods = _GetControlsWithClass(wrapper, AuthMethodsWrapperClass, True)
+                        If authMethods.Count <> 1 Then
+                            ThrowAttrExpectedException($"CssClass with value = {AuthMethodsWrapperClass}", wrapper.ClientID)
+                        End If
+                    End If
+
                 End If
 
-                'checking other methods
-                If _IsClassNameNull(AuthMethodsWrapperClass) Then
-                    Dim targetAuthMethods = wrapper.FindControlByAttribute("AuthMethod", True).ToArray()
-                    If targetAuthMethods.Count = 0 Then
-                        ThrowAttrExpectedException("AuthMethod", "AuthMethodsTemplate")
-                    End If
-                End If
             End If
         End Sub
 
         ' Todo: test if its htmlcontrol with no id set we can still access UniqueID and it exists
         ' todo: requiredinput is not necessary to exist in InputsTemplate this could only be other auth methods inputs
         Private Sub _SetupInputs(container As CustomMarkupContainer)
+
             If HasReferencedInputs Or InputsTemplate IsNot Nothing Then
                 DefaultInputsMarkup.Visible = False
-                Dim wrapper = If(HasReferencedInputs, Me.Wrapper, container)
-                ' required input
-                ' other inputs are optional so no checks for them
-                If _IsClassNameNull(RequiredInputWrapperClass) Then
-                    Dim requiredInputArr = wrapper.FindControlByAttribute("RequiredInput", True).ToArray()
-                    If HasRequiredInput AndAlso requiredInputArr.Count <> 1 Then
-                        ThrowAttrExpectedException("RequiredInput", "InputsTemplate")
+                If Constants.IsDebugMode Then
+                    Dim wrapper = If(HasReferencedInputs, Me.Wrapper, container)
+                    ' required input
+                    ' other inputs are optional so no checks for them unless we have defined InputsWrapperClass
+
+                    If _IsClassNameNull(RequiredInputWrapperClass) Then
+                        Dim requiredInputsArr As Utils.ControlWithAttribute() = wrapper.FindControlByAttribute("DSRequiredInput", stopOnFirstHit:=True).ToArray()
+                        If HasRequiredInput AndAlso requiredInputsArr.Count <> 1 Then
+                            ThrowAttrExpectedException("DSRequiredInput", "InputsTemplate")
+                        End If
+                    ElseIf Not SkipClassChecks Then
+                        Dim inputsArr As Utils.ControlWithCssClass() = _GetControlsWithClass(wrapper, RequiredInputWrapperClass, True)
+                        If inputsArr.Count <> 1 Then
+                            ThrowAttrExpectedException($"CssClass with value = {RequiredInputWrapperClass}", wrapper.ClientID)
+                        End If
+                    End If
+
+                    ' defined InputsWrapperClass checks
+                    If Not SkipClassChecks AndAlso Not _IsClassNameNull(InputsWrapperClass) Then
+                        Dim inputsArr As Utils.ControlWithCssClass() = _GetControlsWithClass(wrapper, InputsWrapperClass, True)
+                        If inputsArr.Count = 0 Then
+                            ThrowAttrExpectedException($"CssClass with value = {InputsWrapperClass}", wrapper.ClientID)
+                        End If
                     End If
                 End If
             Else
@@ -341,15 +378,21 @@ Namespace Controls
         Private Sub _SetupSubmitButton(container As CustomMarkupContainer)
             If HasReferencedSubmitButton Or SubmitTemplate IsNot Nothing Then
                 Submit_BTN.Visible = False
+
                 Dim wrapper = If(HasReferencedSubmitButton, Me.Wrapper, container)
                 If _IsClassNameNull(SubmitButtonWrapperClass) Then
-                    Dim buttons = wrapper.FindControlByAttribute("SubmitView", True).ToArray()
+                    Dim buttons = wrapper.FindControlByAttribute("DSSubmitView", stopOnFirstHit:=True).ToArray()
                     If buttons.Count() <> 1 Then
-                        ThrowAttrExpectedException("SubmitView", "SubmitTemplate")
+                        ThrowAttrExpectedException("DSSubmitView", "SubmitTemplate")
                     End If
-                    AddHandler DirectCast(buttons(0), Button).Click, AddressOf SubmitBtn_Click
+                    AddHandler DirectCast(buttons(0).Control, Button).Click, AddressOf SubmitBtn_Click
                     If WrappingPanel IsNot Nothing Then
-                        WrappingPanel.DefaultButton = buttons(0).UniqueID
+                        WrappingPanel.DefaultButton = buttons(0).Control.UniqueID
+                    End If
+                ElseIf Constants.IsDebugMode AndAlso Not SkipClassChecks Then
+                    Dim submitButtonArr = _GetControlsWithClass(wrapper, SubmitButtonWrapperClass, True)
+                    If submitButtonArr.Count <> 1 Then
+                        ThrowAttrExpectedException($"CssClass with value = {SubmitButtonWrapperClass}", wrapper.ClientID)
                     End If
                 End If
             Else
@@ -391,5 +434,9 @@ Namespace Controls
             Return className = "-null-"
         End Function
 
+
+        Private Function _GetControlsWithClass(wrapper As Control, className As String, stopOnFirstHit As Boolean) As Utils.ControlWithCssClass()
+            Return wrapper.FindControlByClass(Function(value) value.Contains(className), stopOnFirstHit:=stopOnFirstHit).ToArray()
+        End Function
     End Class
 End Namespace

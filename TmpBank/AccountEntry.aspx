@@ -55,7 +55,7 @@
                 DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
                 <SubmitTemplate>
                     my submit  template
-                    <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" SubmitView />
+                    <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" DSSubmitView/>
                 </SubmitTemplate>
             </uc:DigitalSig>
 

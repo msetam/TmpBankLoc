@@ -283,7 +283,7 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Controls\DigitalSig.ascx" />
-    <Content Include="Controls\LabledInput.ascx" />
+    <Content Include="Controls\LabeledInput.ascx" />
     <Content Include="Default.aspx" />
     <Content Include="Errors\Error403.aspx" />
     <Content Include="Errors\GeneralError.aspx" />
@@ -413,11 +413,11 @@
       <DependentUpon>DigitalSig.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Controls\LabledInput.ascx.designer.vb">
-      <DependentUpon>LabledInput.ascx</DependentUpon>
+    <Compile Include="Controls\LabeledInput.ascx.designer.vb">
+      <DependentUpon>LabeledInput.ascx</DependentUpon>
     </Compile>
-    <Compile Include="Controls\LabledInput.ascx.vb">
-      <DependentUpon>LabledInput.ascx</DependentUpon>
+    <Compile Include="Controls\LabeledInput.ascx.vb">
+      <DependentUpon>LabeledInput.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Default.aspx.vb">

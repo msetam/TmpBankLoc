@@ -1,5 +1,5 @@
 ﻿Namespace Controls
-    Public Class LabeldInput
+    Public Class LabeledInput
         Inherits System.Web.UI.UserControl
 
         Public Property Name As String = "input(string)"

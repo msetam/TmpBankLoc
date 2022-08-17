@@ -12,7 +12,7 @@ Option Explicit On
 
 Namespace Controls
 
-    Partial Public Class LabeldInput
+    Partial Public Class LabeledInput
 
         '''<summary>
         '''Wrapper control.

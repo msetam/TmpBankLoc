@@ -2,7 +2,7 @@
 
 <%@ Import Namespace="TmpBank.DigSigService" %>
 
-<%@ Register Src="~/Controls/LabledInput.ascx" TagName="LabledInput" TagPrefix="uc" %>
+<%@ Register Src="~/Controls/LabeledInput.ascx" TagName="LabledInput" TagPrefix="uc" %>
 <%@ Register Src="~/Controls/DigitalSig.ascx" TagName="DigitalSig" TagPrefix="uc" %>
 
 
@@ -41,7 +41,7 @@
             <h2 class="h2">Login
             </h2>
 
-            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
+            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper"/>
             <uc:LabledInput ID="PasswordLogin_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
 
             <uc:DigitalSig runat="server"

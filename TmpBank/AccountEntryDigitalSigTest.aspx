@@ -3,7 +3,7 @@
 <%@ Import Namespace="TmpBank.DigSigService" %>
 <%@ Import Namespace="TmpBank.Pages" %>
 
-<%@ Register Src="~/Controls/LabledInput.ascx" TagName="LabledInput" TagPrefix="uc" %>
+<%@ Register Src="~/Controls/LabeledInput.ascx" TagName="LabledInput" TagPrefix="uc" %>
 <%@ Register Src="~/Controls/DigitalSig.ascx" TagName="DigitalSig" TagPrefix="uc" %>
 
 

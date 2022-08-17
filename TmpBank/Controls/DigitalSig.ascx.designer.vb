@@ -10,7 +10,7 @@
 Option Strict On
 Option Explicit On
 
-Namespace EndUserWebSite.Controls
+Namespace Controls
 
     Partial Public Class DigitalSigControl
 
@@ -48,7 +48,7 @@ Namespace EndUserWebSite.Controls
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents NationalCode_UC As Global.System.Web.UI.UserControl
+        Protected WithEvents NationalCode_UC As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''Password_UC control.
@@ -57,7 +57,7 @@ Namespace EndUserWebSite.Controls
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents Password_UC As Global.System.Web.UI.UserControl
+        Protected WithEvents Password_UC As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''DefaultAuthMethodsMarkup control.

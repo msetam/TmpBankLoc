@@ -57,7 +57,7 @@ Namespace Pages
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents UserNameLogin_View As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents UserNameLogin_View As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''PasswordLogin_View control.
@@ -66,7 +66,7 @@ Namespace Pages
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents PasswordLogin_View As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents PasswordLogin_View As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''DigSig_UC control.
@@ -111,7 +111,7 @@ Namespace Pages
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents LabledInput1 As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents LabledInput1 As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''LabledInput2 control.
@@ -120,7 +120,7 @@ Namespace Pages
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents LabledInput2 As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents LabledInput2 As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''DigitalSig1 control.
@@ -228,7 +228,7 @@ Namespace Pages
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents LabledInput3 As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents LabledInput3 As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''LabledInput4 control.
@@ -237,7 +237,7 @@ Namespace Pages
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents LabledInput4 As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents LabledInput4 As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''Button2 control.
@@ -282,7 +282,7 @@ Namespace Pages
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents LabledInput5 As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents LabledInput5 As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''LabledInput6 control.
@@ -291,7 +291,7 @@ Namespace Pages
         '''Auto-generated field.
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
-        Protected WithEvents LabledInput6 As Global.TmpBank.Controls.LabeldInput
+        Protected WithEvents LabledInput6 As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''Button3 control.

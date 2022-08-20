@@ -222,24 +222,6 @@ Namespace Pages
         Protected WithEvents Radio4 As Global.System.Web.UI.HtmlControls.HtmlInputRadioButton
 
         '''<summary>
-        '''LabledInput3 control.
-        '''</summary>
-        '''<remarks>
-        '''Auto-generated field.
-        '''To modify move field declaration from designer file to code-behind file.
-        '''</remarks>
-        Protected WithEvents LabledInput3 As Global.TmpBank.Controls.LabeledInput
-
-        '''<summary>
-        '''LabledInput4 control.
-        '''</summary>
-        '''<remarks>
-        '''Auto-generated field.
-        '''To modify move field declaration from designer file to code-behind file.
-        '''</remarks>
-        Protected WithEvents LabledInput4 As Global.TmpBank.Controls.LabeledInput
-
-        '''<summary>
         '''Button2 control.
         '''</summary>
         '''<remarks>
@@ -274,24 +256,6 @@ Namespace Pages
         '''To modify move field declaration from designer file to code-behind file.
         '''</remarks>
         Protected WithEvents DigitalSig3 As Global.TmpBank.Controls.DigitalSigControl
-
-        '''<summary>
-        '''LabledInput5 control.
-        '''</summary>
-        '''<remarks>
-        '''Auto-generated field.
-        '''To modify move field declaration from designer file to code-behind file.
-        '''</remarks>
-        Protected WithEvents LabledInput5 As Global.TmpBank.Controls.LabeledInput
-
-        '''<summary>
-        '''LabledInput6 control.
-        '''</summary>
-        '''<remarks>
-        '''Auto-generated field.
-        '''To modify move field declaration from designer file to code-behind file.
-        '''</remarks>
-        Protected WithEvents LabledInput6 As Global.TmpBank.Controls.LabeledInput
 
         '''<summary>
         '''Button3 control.

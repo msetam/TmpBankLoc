@@ -1,6 +1,9 @@
 ﻿Imports System.ComponentModel
 Imports TmpBank.Utils
 
+Module Constants
+    Public IsDebugMode = True
+End Module
 
 Namespace Controls
 
@@ -13,14 +16,15 @@ Namespace Controls
     Public Class CustomMarkupContainer
         Inherits UserControl
 
-        Private _randomTest As Integer
+        Public Property BindingTest() As Integer
+
         Friend Sub New(ByVal randomTest As Integer)
-            Me._randomTest = randomTest
+            Me.BindingTest = randomTest
             Debug.WriteLine("Container Initialized")
 
         End Sub
 
-        Public Property Index() As Integer
+
     End Class
 
 
@@ -198,7 +202,6 @@ Namespace Controls
 
             If HasReferencedAuthMethods Or AuthMethodsTemplate IsNot Nothing Then
                 DefaultAuthMethodsMarkup.Visible = False
-
                 If Constants.IsDebugMode Then
 
                     Dim wrapper = If(HasReferencedAuthMethods, Me.Wrapper, container)

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="vb" AutoEventWireup="false" CodeBehind="DigitalSigControl.ascx.vb" Inherits="TmpBank.Controls.DigitalSigControl" %>
+﻿<%@ Control Language="vb" AutoEventWireup="false" CodeBehind="DigitalSig.ascx.vb" Inherits="TmpBank.Controls.DigitalSigControl" %>
 
 
 <%@ Register Src="~/Controls/LabeledInput.ascx" TagName="LabeledInput" TagPrefix="uc" %>
@@ -13,19 +13,19 @@
         <fieldset runat="server" id="DefaultAuthMethodsMarkup" class="-ds-fieldset frm-group" style="min-width: max-content">
             <div>
                 <p class="-ds-legend col-md-3 col-sm-3 control-label">
-                    روش ثبت:
+                   Auth Method
                 </p>
                 <div class="-auth-methods-wrapper col-md-8 col-sm-8">
                     <div class="-ds-auth-method">
                         <label class="-ds-rb" for="<%= Password_RB.ClientID %>">
-                            <span>رمز عبور </span>
+                            <span>Pass </span>
                         </label>
                         <input runat="server" type="radio" id="Password_RB" value="username and password" checked />
                     </div>
 
                     <div class="-ds-auth-method ">
                         <label class="-ds-rb" for="<%= DigitalSignature_RB.ClientID %>">
-                            <span>امضای دیجیتالی </span>
+                            <span>Dig Sig </span>
                         </label>
                         <input runat="server" type="radio" id="DigitalSignature_RB" class="-ds-rb" value="digital signature" dstargetauthmethod />
                     </div>

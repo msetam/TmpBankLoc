@@ -41,7 +41,7 @@
             <h2 class="h2">Login
             </h2>
 
-            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper"/>
+            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
             <uc:LabledInput ID="PasswordLogin_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
 
             <uc:DigitalSig runat="server"
@@ -50,12 +50,10 @@
                 Wrapper="<%# LoginWrapper_PNL %>"
                 HasReferencedInputs="True"
                 InputsWrapperClass="input-wrapper"
-                RequiredInputWrapperClass="required-input-wrapper"
-                DebugWaitTime="10000"
-                DebugExpectedResult="<%# TmpBank.DigSigService.DigSigStatus.SUCCEEDED %>">
+                RequiredInputWrapperClass="required-input-wrapper">
                 <SubmitTemplate>
-                    my submit  template
-                    <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" DSSubmitView/>
+                    <hr />
+                    <asp:Button ID="LoginBtn_View" runat="server" CssClass="btn btn-light" Text="Login" DSSubmitView />
                 </SubmitTemplate>
             </uc:DigitalSig>
 
@@ -92,32 +90,27 @@
     </asp:Panel>
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", () => {
-
-            const digitalSigManager = DigitalSignature.DigitalSignatureManager.getInstance("<%= DigSig_UC.Wrapper.ClientID %>");
-
+            const digitalSigManager = DigitalSignature.DigitalSignatureManager.getInstance("<%= DigSig_UC.Wrapper.ClientID%>");
+            digitalSigManager.init();
             digitalSigManager.setOnAuthEventsListener({
 
-                onRequestStarted: function () {
+                onRequestStarting: function () {
                     console.log("started");
                 },
                 onTrackingDataReceived: function (data) {
                     console.log(`tracking data recevied: ${data}`)
                 },
-                onRetry: function () {
-                    console.log("retrying");
+                onCheckingRequestStatus: function (status) {
+                    console.log(`status receieved: ${status}`);
                 },
                 onSuccess: function () {
-                    console.log("succeeded");
-                    console.log("redirectig to account home");
-                    setTimeout(() => {
-                        document.location.reload();
-                    }, 1000);
+                    console.log("success");
                 },
                 onFailed: function (errors) {
                     console.log(errors);
                 },
                 onAuthMethodChanged(selectedAuthMethodInput) {
-                    console.log("auth method changed to " + selectedAuthMethodInput);
+   
                 }
             });
 

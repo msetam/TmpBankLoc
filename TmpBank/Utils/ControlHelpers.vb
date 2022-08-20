@@ -81,11 +81,14 @@ Namespace Utils
             If k IsNot Nothing Then
                 If valueCheckFunc Is Nothing Then
                     Yield current
+                    If stopOnFirstHit Then
+                        Return
+                    End If
                 ElseIf valueCheckFunc(k) Then
                     Yield current
-                End If
-                If stopOnFirstHit Then
-                    Return
+                    If stopOnFirstHit Then
+                        Return
+                    End If
                 End If
             End If
             If control.HasControls() Then
@@ -117,8 +120,8 @@ Namespace Utils
             Return New ControlWithAttribute() With {.Control = control, .Attributes = Nothing}
         End Function
 
-        ' for user controls we try to get a property name Starting with Css therefore we might get the wrong answer for those.
-        ' althout its better to stick to convensions and use CssClass for classes in controls.
+        ' for user controls we try to get the CssClass property or any property that starts with Css
+        ' therefor this function might lead to wrong answers. Although its always better to stick to conventions and use CssClass name for classes.
         Private Function _CreateControlWithCssClass(control As Control) As ControlWithCssClass
             Dim currentHC = TryCast(control, System.Web.UI.HtmlControls.HtmlControl)
             If currentHC IsNot Nothing Then
@@ -130,9 +133,14 @@ Namespace Utils
             End If
             Dim currentUC = TryCast(control, System.Web.UI.UserControl)
             If currentUC IsNot Nothing Then
-                Return New ControlWithCssClass() With {.Control = control, .Css = currentUC.GetType().GetProperties().Any(Function(prop) prop.Name = "CssClass" OrElse prop.Name.StartsWith("Css"))}
+                Dim css = DirectCast(currentUC.GetType().GetProperties().SingleOrDefault(Function(prop) prop.Name.ToLower = "cssclass" OrElse prop.Name.ToLower.StartsWith("css")).GetValue(currentUC), String)
+                If css Is Nothing Then
+                    Throw New Exception($"UserControl {currentUC.GetType()} doesn't use CssClass or any property that starts with Css for css-classes")
+                End If
+                Return New ControlWithCssClass() With {.Control = control, .Css = css}
             End If
             Return New ControlWithCssClass() With {.Control = control, .Css = Nothing}
+
         End Function
 
 

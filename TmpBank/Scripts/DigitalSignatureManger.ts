@@ -55,6 +55,7 @@ namespace DigitalSignature {
         constructor(private _digitalSigManager: DigitalSignature.DigitalSignatureManager) {
         }
 
+
         private _hideAction(currentSelectedAuthMethod: HTMLInputElement) {
             if (this._digitalSigManager.hasRequiredInput()) {
                 // first we set the state of requiredInput because it can also be an input for other auth methods(flaggs: RequiredView InputView)
@@ -100,7 +101,8 @@ namespace DigitalSignature {
                 }
             }
         }
-        apply(currentSelectedAuthMethod: HTMLInputElement) {
+
+        public apply(currentSelectedAuthMethod: HTMLInputElement) {
             const effect = this._actionsToEffects[this._digitalSigManager.getCurrentAction()];
             if (effect) {
                 return effect(currentSelectedAuthMethod);
@@ -128,7 +130,7 @@ namespace DigitalSignature {
         private _inputsWrapperClasses: string;// "inputs-class, required-input-class"||-null-"
         private _submitWrapperClass: string;//   "class" || "-null-"
 
-        private static _baseApiUrl = "darodivar";
+        private static _baseApiUrl = "http://localhost:5288/";
         private static _wrapperIdToDigSigManagerInstance: { [key: string]: DigitalSignatureManager } = {};
 
         private _isDigSigMethodSelected = false;
@@ -186,11 +188,14 @@ namespace DigitalSignature {
             if (!this._submitBtn) {
                 this._wrapper.querySelector(this._submitWrapperClass + " button");
             }
+
             // setting up html inputs that define the sent data
             const sentRequiredInputClassName = this._inputsWrapperClasses.split(",")[1];
-            this._requiredInput = this._hasRequiredInput && this._wrapper.querySelector(
-                !this._isClassNameNull(sentRequiredInputClassName) ? sentRequiredInputClassName + " input" : "[dsrequiredinput]"
-            ) as HTMLInputElement;
+            if (this._hasRequiredInput) {
+                this._requiredInput = this._wrapper.querySelector(
+                    !this._isClassNameNull(sentRequiredInputClassName) ? sentRequiredInputClassName + " input" : "[dsrequiredinput]"
+                ) as HTMLInputElement;
+            }
 
             const sentInputViewClassName = this._inputsWrapperClasses.split(",")[0];
 
@@ -226,9 +231,9 @@ namespace DigitalSignature {
                     e.stopImmediatePropagation();
                     listeners && typeof listeners.onRequestStarting === 'function' && listeners.onRequestStarting();
                     $.ajax({
-                        url: this._digitalSignatureInitRequestData?.endpoint ? this._digitalSignatureInitRequestData.endpoint : this._defaultDigitalSignatureInitRequestData.endpoint,
+                        url: this._digitalSignatureInitRequestData?.endpoint ?? this._defaultDigitalSignatureInitRequestData.endpoint,
                         method: "POST",
-                        data: JSON.stringify(this._digitalSignatureInitRequestData?.data ? this._digitalSignatureInitRequestData.data : this._defaultDigitalSignatureInitRequestData.data),
+                        data: JSON.stringify(this._digitalSignatureInitRequestData?.data ?? this._defaultDigitalSignatureInitRequestData.data),
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
                         success: (response) => {
@@ -268,7 +273,7 @@ namespace DigitalSignature {
                 return
             }
             // setting the initial state
-            const allAuthMethodsWrapper = this.getWrapperForElementWithNodeName(this._targetAuthMethodRb, "fieldset") ?? this.getWrapperForElementWithClass(this._targetAuthMethodRb);
+            const allAuthMethodsWrapper = this.getWrapperForElementWithNodeName(this._targetAuthMethodRb, "fieldset") ?? this.getWrapperForElementWithClass(this._targetAuthMethodRb, "ds-wrapper");
 
             Array.prototype.some.call((allAuthMethodsWrapper.querySelectorAll("input[type=radio]") as NodeListOf<HTMLInputElement>), (element) => {
                 if (element.checked) {
@@ -281,13 +286,13 @@ namespace DigitalSignature {
             allAuthMethodsWrapper.addEventListener("change", (e) => { this._onAuthFieldMethodChanged(this._targetAuthMethodRb, e) });
         }
 
-        // for fieldset/div[class has AuthMethodsWrapperClass]authmethods html change event
+        // for fieldset/div[class has AuthMethodsWrapperClass] html change event
         private _onAuthFieldMethodChanged(digSigRb: HTMLInputElement, e?: Event, selectedElement?: HTMLInputElement) {
             this._isDigSigMethodSelected = digSigRb.checked;
             const element = selectedElement ? selectedElement : e.target as HTMLElement
             if (element instanceof HTMLInputElement && (element as HTMLInputElement).type === "radio") {
 
-                // we check event as well because inital call to this is not an actual event caused by clicking: see _setAuthMethodsRadioBtnListeners
+                // we check the nullability of the event as well because inital call to this function is not an actual event caused by clicking: see _setAuthMethodsRadioBtnListeners
                 e && this._authManagerListeners && typeof this._authManagerListeners.onAuthMethodChanged === 'function'
                     && this._authManagerListeners.onAuthMethodChanged(element);
 
@@ -299,9 +304,9 @@ namespace DigitalSignature {
 
         private _checkRequestStatus() {
             $.ajax({
-                url: this._digitalSignatureCheckStatusRequestData?.endpoint ? this._digitalSignatureCheckStatusRequestData.endpoint : this._defaultDigitalSignatureCheckStatusRequestData.endpoint,
+                url: this._digitalSignatureCheckStatusRequestData?.endpoint ?? this._defaultDigitalSignatureCheckStatusRequestData.endpoint,
                 method: "POST",
-                data: JSON.stringify(this._digitalSignatureCheckStatusRequestData?.data ? this._digitalSignatureCheckStatusRequestData.data : this._defaultDigitalSignatureCheckStatusRequestData.data),
+                data: JSON.stringify(this._digitalSignatureCheckStatusRequestData?.data ?? this._defaultDigitalSignatureCheckStatusRequestData.data),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: (response: any) => {
@@ -404,7 +409,7 @@ namespace DigitalSignature {
         }
 
         public hasRequiredInput() {
-            return this._requiredInput != null;
+            return this._hasRequiredInput;
         }
 
     }

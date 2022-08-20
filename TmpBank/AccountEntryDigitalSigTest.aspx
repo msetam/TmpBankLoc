@@ -3,7 +3,7 @@
 <%@ Import Namespace="TmpBank.DigSigService" %>
 <%@ Import Namespace="TmpBank.Pages" %>
 
-<%@ Register Src="~/Controls/LabeledInput.ascx" TagName="LabledInput" TagPrefix="uc" %>
+<%@ Register Src="~/Controls/LabeledInput.ascx" TagName="LabeledInput" TagPrefix="uc" %>
 <%@ Register Src="~/Controls/DigitalSig.ascx" TagName="DigitalSig" TagPrefix="uc" %>
 
 
@@ -72,8 +72,8 @@
 
             </fieldset>
 
-            <uc:LabledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
-            <uc:LabledInput ID="PasswordLogin_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
+            <uc:LabeledInput ID="UserNameLogin_View" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
+            <uc:LabeledInput ID="PasswordLogin_View" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
 
             <uc:DigitalSig runat="server"
                 ID="DigSig_UC"
@@ -105,8 +105,8 @@
             <h2 class="h2">Login with attr/templated authmethods referenced inputs
             </h2>
 
-            <uc:LabledInput ID="LabledInput1" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
-            <uc:LabledInput ID="LabledInput2" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
+            <uc:LabeledInput ID="LabledInput1" Name="Username" PlaceHolderText="username..." runat="server" CssClass="required-input-wrapper input-wrapper ds-wrapper" />
+            <uc:LabeledInput ID="LabledInput2" Name="Password" InputType="<%# TextBoxMode.Password %>" PlaceHolderText="password..." CssClass="input-wrapper ds-wrapper" runat="server" />
 
             <uc:DigitalSig runat="server"
                 ID="DigitalSig1"

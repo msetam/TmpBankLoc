@@ -87,11 +87,11 @@ var DigitalSignature;
             this._isDigSigMethodSelected = false;
             this._hasInitialized = false;
             this._defaultDigitalSignatureInitRequestData = {
-                endpoint: "".concat(DigitalSignatureManager._baseApiUrl, "/digsig/init"),
+                endpoint: function () { return "".concat(DigitalSignatureManager._baseApiUrl, "/digitalsig/init"); },
                 data: function () { return {}; }
             };
             this._defaultDigitalSignatureCheckStatusRequestData = {
-                endpoint: "".concat(DigitalSignatureManager._baseApiUrl, "/digsig/check"),
+                endpoint: function () { return "".concat(DigitalSignatureManager._baseApiUrl, "/digitalsig/check"); },
                 data: function () { return {}; }
             };
         }
@@ -146,32 +146,12 @@ var DigitalSignature;
             this._submitBtn.onclick = null;
             savedOnClick && this._submitBtn.removeEventListener("click", savedOnClick);
             this._submitBtn.addEventListener("click", function (e) {
-                var _a, _b, _c, _d;
-                var listeners = _this._authManagerListeners;
                 if (_this._isDigSigMethodSelected) {
                     _this.disableWrapper();
                     e.preventDefault();
                     e.stopPropagation();
                     e.stopImmediatePropagation();
-                    listeners && typeof listeners.onRequestStarting === 'function' && listeners.onRequestStarting();
-                    $.ajax({
-                        url: (_b = (_a = _this._digitalSignatureInitRequestData) === null || _a === void 0 ? void 0 : _a.endpoint) !== null && _b !== void 0 ? _b : _this._defaultDigitalSignatureInitRequestData.endpoint,
-                        method: "POST",
-                        data: JSON.stringify((_d = (_c = _this._digitalSignatureInitRequestData) === null || _c === void 0 ? void 0 : _c.data) !== null && _d !== void 0 ? _d : _this._defaultDigitalSignatureInitRequestData.data),
-                        contentType: "application/json; charset=utf-8",
-                        dataType: "json",
-                        success: function (response) {
-                            console.log(response.d);
-                            _this._requestCode = response.d;
-                            listeners && typeof listeners.onRequestTrackingDataReceived === 'function' && listeners.onRequestTrackingDataReceived(response);
-                            _this._checkRequestStatus();
-                        },
-                        error: function (errors) {
-                            console.log(errors);
-                            _this.enableWrapper();
-                        },
-                        /*               xhrFields: { withCrendtials: true },*/
-                    });
+                    _this._startDigitalSigProcess();
                     return false;
                 }
             });
@@ -185,6 +165,30 @@ var DigitalSignature;
         };
         DigitalSignatureManager.prototype.setDigitalSignatureCheckStatusRequestsData = function (digitalSigRequestsData) {
             this._digitalSignatureCheckStatusRequestData = digitalSigRequestsData;
+        };
+        DigitalSignatureManager.prototype._startDigitalSigProcess = function () {
+            var _this = this;
+            var _a, _b, _c, _d;
+            this._authManagerListeners && typeof this._authManagerListeners.onRequestStarting === 'function' && this._authManagerListeners.onRequestStarting();
+            $.ajax({
+                url: (_b = (_a = this._digitalSignatureInitRequestData) === null || _a === void 0 ? void 0 : _a.endpoint()) !== null && _b !== void 0 ? _b : this._defaultDigitalSignatureInitRequestData.endpoint(),
+                method: "POST",
+                data: JSON.stringify((_d = (_c = this._digitalSignatureInitRequestData) === null || _c === void 0 ? void 0 : _c.data) !== null && _d !== void 0 ? _d : this._defaultDigitalSignatureInitRequestData.data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    _this._requestCode = response.RequestCode;
+                    _this._authManagerListeners && typeof _this._authManagerListeners.onRequestTrackingDataReceived === 'function' && _this._authManagerListeners.onRequestTrackingDataReceived(response);
+                    _this._checkRequestStatus();
+                },
+                error: function (errors) {
+                    _this.enableWrapper();
+                    _this._authManagerListeners && typeof _this._authManagerListeners.onFailed === 'function' && _this._authManagerListeners.onFailed(errors);
+                },
+                xhrFields: {
+                    withCredentials: true
+                }
+            });
         };
         // listens to changes in a wrapper that is the closest ancestor with a node.type=fieldset and if that doesn't exist, it will search for the closest ancestor with className="ds-wrapper"
         DigitalSignatureManager.prototype._setAuthMethodsRadioBtnListeners = function () {
@@ -211,7 +215,8 @@ var DigitalSignature;
             if (element instanceof HTMLInputElement && element.type === "radio") {
                 // we check the nullability of the event as well because inital call to this function is not an actual event caused by clicking: see _setAuthMethodsRadioBtnListeners
                 e && this._authManagerListeners && typeof this._authManagerListeners.onAuthMethodChanged === 'function'
-                    && this._authManagerListeners.onAuthMethodChanged(element);
+                    && this._authManagerListeners.onAuthMethodChanged(element, this._lastSelectedAuthMethodRb);
+                this._lastSelectedAuthMethodRb = element;
                 this._actionsToEffects.apply(selectedElement);
             }
         };
@@ -219,28 +224,31 @@ var DigitalSignature;
             var _this = this;
             var _a, _b, _c, _d;
             $.ajax({
-                url: (_b = (_a = this._digitalSignatureCheckStatusRequestData) === null || _a === void 0 ? void 0 : _a.endpoint) !== null && _b !== void 0 ? _b : this._defaultDigitalSignatureCheckStatusRequestData.endpoint,
+                url: (_b = (_a = this._digitalSignatureCheckStatusRequestData) === null || _a === void 0 ? void 0 : _a.endpoint()) !== null && _b !== void 0 ? _b : this._defaultDigitalSignatureCheckStatusRequestData.endpoint(),
                 method: "POST",
                 data: JSON.stringify((_d = (_c = this._digitalSignatureCheckStatusRequestData) === null || _c === void 0 ? void 0 : _c.data) !== null && _d !== void 0 ? _d : this._defaultDigitalSignatureCheckStatusRequestData.data),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: function (response) {
-                    if (response.d.Status == DigitalSignatureStatus.SUCCEEDED) {
-                        _this._authManagerListeners && typeof _this._authManagerListeners.onSuccess === 'function' && _this._authManagerListeners.onSuccess();
+                    if (response.Status == DigitalSignatureStatus.SUCCEEDED) {
+                        _this._authManagerListeners && typeof _this._authManagerListeners.onSuccess === 'function' && _this._authManagerListeners.onSuccess(response);
                     }
-                    else if (response.d.Status == DigitalSignatureStatus.FAILED || response.d.Status == DigitalSignatureStatus.TIMED_OUT) {
-                        _this._authManagerListeners && typeof _this._authManagerListeners.onFailed === 'function' && _this._authManagerListeners.onFailed(response.d.Status);
+                    else if (response.Status == DigitalSignatureStatus.FAILED || response.Status == DigitalSignatureStatus.TIMED_OUT) {
                         _this.enableWrapper();
+                        _this._authManagerListeners && typeof _this._authManagerListeners.onFailed === 'function' && _this._authManagerListeners.onFailed(response);
                     }
                     else {
                         setTimeout(function () { _this._checkRequestStatus(); }, _this._interval);
-                        _this._authManagerListeners && typeof _this._authManagerListeners.onCheckingRequestStatus === 'function' && _this._authManagerListeners.onCheckingRequestStatus(response.d.Status);
+                        _this._authManagerListeners && typeof _this._authManagerListeners.onCheckingRequestStatus === 'function' && _this._authManagerListeners.onCheckingRequestStatus(response.Status);
                     }
                 },
-                error: function (errors) { return _this._authManagerListeners && typeof _this._authManagerListeners.onFailed === 'function' && _this._authManagerListeners.onFailed(errors); },
-                //xhrFields: {
-                //    withCredentials: true
-                //}
+                error: function (errors) {
+                    _this.enableWrapper();
+                    _this._authManagerListeners && typeof _this._authManagerListeners.onFailed === 'function' && _this._authManagerListeners.onFailed(errors);
+                },
+                xhrFields: {
+                    withCredentials: true
+                }
             });
         };
         DigitalSignatureManager.prototype._isClassNameNull = function (className) {
@@ -291,14 +299,17 @@ var DigitalSignature;
         };
         DigitalSignatureManager.prototype.disableWrapper = function () {
             // @ts-ignore
-            backgroundPopupCommon();
+            // backgroundPopupCommon();
+            this._wrapper.style.opacity = "0.3";
         };
         DigitalSignatureManager.prototype.enableWrapper = function () {
-            setTimeout(function () {
-                console.warn("remove timeout for enableWrapper in production");
-                // @ts-ignore
-                UndobackgroundPopup();
-            }, 5000);
+            // setTimeout(() => {
+            //     console.warn("remove timeout for enableWrapper in production");
+            //     // @ts-ignore
+            ////     UndobackgroundPopup();
+            //     this._wrapper.style.opacity = 1;
+            // }, 5000);
+            this._wrapper.style.opacity = "1";
         };
         DigitalSignatureManager.prototype.setAction = function (action) {
             this._currentAction = action;
@@ -315,7 +326,7 @@ var DigitalSignature;
         DigitalSignatureManager.prototype.hasRequiredInput = function () {
             return this._hasRequiredInput;
         };
-        DigitalSignatureManager._baseApiUrl = "http://localhost:5288/";
+        DigitalSignatureManager._baseApiUrl = "http://localhost:5288/api";
         DigitalSignatureManager._wrapperIdToDigSigManagerInstance = {};
         return DigitalSignatureManager;
     }());

@@ -5,19 +5,19 @@
 namespace DigitalSignature {
 
     interface IAuthManagerEvents {
-        onSuccess();
+        onSuccess(data: any);
         onRequestTrackingDataReceived(data: any); // when response of hamoon/sign is retrieved
-        onFailed(status: DigitalSignatureStatus); // when user rejects signing or when our request times out
-        onCheckingRequestStatus(status: DigitalSignatureStatus); // when response of request to hamoon/inquiry is retrieved
+        onFailed(data: any); // when user rejects signing or when our request times out
+        onCheckingRequestStatus(data: any); // when response of request to hamoon/inquiry is retrieved
         onRequestStarting(); // this event fires right before the request to hamoon/sign
-        onAuthMethodChanged(selectedAuthMethodInput: HTMLInputElement); // when auth method changes, for instance changing dig-sig-method to username-pass-method
+        onAuthMethodChanged(selectedAuthMethodInput: HTMLInputElement, lastSelectedAuthMethodInput: HTMLInputElement); // when auth method changes, for instance changing dig-sig-method to username-pass-method
     }
 
     enum DigitalSignatureStatus {
         WAITING = 0,
         TIMED_OUT,
         SUCCEEDED,
-        FAILED,
+        FAILED
     }
 
 
@@ -34,7 +34,7 @@ namespace DigitalSignature {
     }
 
     type DigitalSigRequestData = {
-        endpoint: string,
+        endpoint: () => string,
         data: () => object
     }
 
@@ -115,6 +115,7 @@ namespace DigitalSignature {
 
         private _wrapper: HTMLDivElement;
         private _submitBtn: HTMLInputElement;
+        private _lastSelectedAuthMethodRb: HTMLInputElement;
         private _targetAuthMethodRb: HTMLInputElement;
         private _requiredInput: HTMLInputElement;
         private _inputsAndWrappers: InputAndWrapper[] = [];
@@ -130,7 +131,7 @@ namespace DigitalSignature {
         private _inputsWrapperClasses: string;// "inputs-class, required-input-class"||-null-"
         private _submitWrapperClass: string;//   "class" || "-null-"
 
-        private static _baseApiUrl = "http://localhost:5288/";
+        private static _baseApiUrl = "http://localhost:5288/api";
         private static _wrapperIdToDigSigManagerInstance: { [key: string]: DigitalSignatureManager } = {};
 
         private _isDigSigMethodSelected = false;
@@ -141,12 +142,12 @@ namespace DigitalSignature {
         private _digitalSignatureCheckStatusRequestData: DigitalSigRequestData;
 
         private _defaultDigitalSignatureInitRequestData: DigitalSigRequestData = {
-            endpoint: `${DigitalSignatureManager._baseApiUrl}/digsig/init`,
+            endpoint: () => `${DigitalSignatureManager._baseApiUrl}/digitalsig/init`,
             data: () => { return {} }
         };
 
         private _defaultDigitalSignatureCheckStatusRequestData: DigitalSigRequestData = {
-            endpoint: `${DigitalSignatureManager._baseApiUrl}/digsig/check`,
+            endpoint: () => `${DigitalSignatureManager._baseApiUrl}/digitalsig/check`,
             data: () => { return {} }
 
         };
@@ -223,31 +224,12 @@ namespace DigitalSignature {
             this._submitBtn.onclick = null;
             savedOnClick && this._submitBtn.removeEventListener("click", savedOnClick);
             this._submitBtn.addEventListener("click", e => {
-                const listeners = this._authManagerListeners;
                 if (this._isDigSigMethodSelected) {
                     this.disableWrapper();
                     e.preventDefault();
                     e.stopPropagation();
                     e.stopImmediatePropagation();
-                    listeners && typeof listeners.onRequestStarting === 'function' && listeners.onRequestStarting();
-                    $.ajax({
-                        url: this._digitalSignatureInitRequestData?.endpoint ?? this._defaultDigitalSignatureInitRequestData.endpoint,
-                        method: "POST",
-                        data: JSON.stringify(this._digitalSignatureInitRequestData?.data ?? this._defaultDigitalSignatureInitRequestData.data),
-                        contentType: "application/json; charset=utf-8",
-                        dataType: "json",
-                        success: (response) => {
-                            console.log(response.d);
-                            this._requestCode = response.d;
-                            listeners && typeof listeners.onRequestTrackingDataReceived === 'function' && listeners.onRequestTrackingDataReceived(response);
-                            this._checkRequestStatus();
-                        },
-                        error: (errors) => {
-                            console.log(errors);
-                            this.enableWrapper();
-                        },
-                        /*               xhrFields: { withCrendtials: true },*/
-                    });
+                    this._startDigitalSigProcess();
                     return false;
                 }
             });
@@ -266,7 +248,28 @@ namespace DigitalSignature {
             this._digitalSignatureCheckStatusRequestData = digitalSigRequestsData;
         }
 
-
+        private _startDigitalSigProcess() {
+            this._authManagerListeners && typeof this._authManagerListeners.onRequestStarting === 'function' && this._authManagerListeners.onRequestStarting();
+            $.ajax({
+                url: this._digitalSignatureInitRequestData?.endpoint() ?? this._defaultDigitalSignatureInitRequestData.endpoint(),
+                method: "POST",
+                data: JSON.stringify(this._digitalSignatureInitRequestData?.data ?? this._defaultDigitalSignatureInitRequestData.data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: (response) => {
+                    this._requestCode = response.RequestCode;
+                    this._authManagerListeners && typeof this._authManagerListeners.onRequestTrackingDataReceived === 'function' && this._authManagerListeners.onRequestTrackingDataReceived(response);
+                    this._checkRequestStatus();
+                },
+                error: (errors: any) => {
+                    this.enableWrapper();
+                    this._authManagerListeners && typeof this._authManagerListeners.onFailed === 'function' && this._authManagerListeners.onFailed(errors);
+                },
+                xhrFields: {
+                    withCredentials: true
+                }
+            });
+        }
         // listens to changes in a wrapper that is the closest ancestor with a node.type=fieldset and if that doesn't exist, it will search for the closest ancestor with className="ds-wrapper"
         private _setAuthMethodsRadioBtnListeners() {
             if (!this._targetAuthMethodRb) {
@@ -289,13 +292,14 @@ namespace DigitalSignature {
         // for fieldset/div[class has AuthMethodsWrapperClass] html change event
         private _onAuthFieldMethodChanged(digSigRb: HTMLInputElement, e?: Event, selectedElement?: HTMLInputElement) {
             this._isDigSigMethodSelected = digSigRb.checked;
-            const element = selectedElement ? selectedElement : e.target as HTMLElement
+            const element = selectedElement ? selectedElement : e.target as HTMLElement;
             if (element instanceof HTMLInputElement && (element as HTMLInputElement).type === "radio") {
 
                 // we check the nullability of the event as well because inital call to this function is not an actual event caused by clicking: see _setAuthMethodsRadioBtnListeners
                 e && this._authManagerListeners && typeof this._authManagerListeners.onAuthMethodChanged === 'function'
-                    && this._authManagerListeners.onAuthMethodChanged(element);
+                    && this._authManagerListeners.onAuthMethodChanged(element, this._lastSelectedAuthMethodRb);
 
+                this._lastSelectedAuthMethodRb = element;
                 this._actionsToEffects.apply(selectedElement);
             }
         }
@@ -304,26 +308,29 @@ namespace DigitalSignature {
 
         private _checkRequestStatus() {
             $.ajax({
-                url: this._digitalSignatureCheckStatusRequestData?.endpoint ?? this._defaultDigitalSignatureCheckStatusRequestData.endpoint,
+                url: this._digitalSignatureCheckStatusRequestData?.endpoint() ?? this._defaultDigitalSignatureCheckStatusRequestData.endpoint(),
                 method: "POST",
                 data: JSON.stringify(this._digitalSignatureCheckStatusRequestData?.data ?? this._defaultDigitalSignatureCheckStatusRequestData.data),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: (response: any) => {
-                    if (response.d.Status == DigitalSignatureStatus.SUCCEEDED) {
-                        this._authManagerListeners && typeof this._authManagerListeners.onSuccess === 'function' && this._authManagerListeners.onSuccess();
-                    } else if (response.d.Status == DigitalSignatureStatus.FAILED || response.d.Status == DigitalSignatureStatus.TIMED_OUT) {
-                        this._authManagerListeners && typeof this._authManagerListeners.onFailed === 'function' && this._authManagerListeners.onFailed(response.d.Status);
+                    if (response.Status == DigitalSignatureStatus.SUCCEEDED) {
+                        this._authManagerListeners && typeof this._authManagerListeners.onSuccess === 'function' && this._authManagerListeners.onSuccess(response);
+                    } else if (response.Status == DigitalSignatureStatus.FAILED || response.Status == DigitalSignatureStatus.TIMED_OUT) {
                         this.enableWrapper();
+                        this._authManagerListeners && typeof this._authManagerListeners.onFailed === 'function' && this._authManagerListeners.onFailed(response);
                     } else {
                         setTimeout(() => { this._checkRequestStatus(); }, this._interval);
-                        this._authManagerListeners && typeof this._authManagerListeners.onCheckingRequestStatus === 'function' && this._authManagerListeners.onCheckingRequestStatus(response.d.Status)
+                        this._authManagerListeners && typeof this._authManagerListeners.onCheckingRequestStatus === 'function' && this._authManagerListeners.onCheckingRequestStatus(response.Status)
                     }
                 },
-                error: (errors: any) => this._authManagerListeners && typeof this._authManagerListeners.onFailed === 'function' && this._authManagerListeners.onFailed(errors),
-                //xhrFields: {
-                //    withCredentials: true
-                //}
+                error: (errors: any) => {
+                    this.enableWrapper();
+                    this._authManagerListeners && typeof this._authManagerListeners.onFailed === 'function' && this._authManagerListeners.onFailed(errors);
+                },
+                xhrFields: {
+                    withCredentials: true
+                }
             });
         }
 
@@ -380,16 +387,18 @@ namespace DigitalSignature {
 
         public disableWrapper() {
             // @ts-ignore
-            backgroundPopupCommon();
+            // backgroundPopupCommon();
+            this._wrapper.style.opacity = "0.3";
         }
 
         public enableWrapper() {
-            setTimeout(() => {
-                console.warn("remove timeout for enableWrapper in production");
-                // @ts-ignore
-                UndobackgroundPopup();
-            }, 5000);
-
+            // setTimeout(() => {
+            //     console.warn("remove timeout for enableWrapper in production");
+            //     // @ts-ignore
+            ////     UndobackgroundPopup();
+            //     this._wrapper.style.opacity = 1;
+            // }, 5000);
+            this._wrapper.style.opacity = "1";
         }
 
         public setAction(action: Action) {

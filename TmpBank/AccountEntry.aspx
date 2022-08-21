@@ -92,29 +92,45 @@
         document.addEventListener("DOMContentLoaded", () => {
             const digitalSigManager = DigitalSignature.DigitalSignatureManager.getInstance("<%= DigSig_UC.Wrapper.ClientID%>");
             digitalSigManager.init();
+
+            let requestCode = -1;
+
             digitalSigManager.setOnAuthEventsListener({
 
                 onRequestStarting: function () {
                     console.log("started");
+
                 },
                 onTrackingDataReceived: function (data) {
-                    console.log(`tracking data recevied: ${data}`)
+                    console.log(`tracking data recevied: ${JSON.stringify(data)}`);
+                    requestCode = data.RequestCode;
                 },
-                onCheckingRequestStatus: function (status) {
-                    console.log(`status receieved: ${status}`);
+                onCheckingRequestStatus: function (data) {
+                    console.log(`status receieved: ${JSON.stringify(data)}`);
                 },
-                onSuccess: function () {
-                    console.log("success");
+                onSuccess: function (data) {
+                    console.log(`success: ${JSON.stringify(data)}`);
                 },
-                onFailed: function (errors) {
-                    console.log(errors);
+                onFailed: function (data) {
+                    console.log(`failed: ${JSON.stringify(data)}`);
                 },
-                onAuthMethodChanged(selectedAuthMethodInput) {
-   
+                onAuthMethodChanged(selectedAuthMethodInput, lastSelectedElement) {
+                    console.log(`auth method changed from ${selectedAuthMethodInput.getAttribute("id")} to ${lastSelectedElement.getAttribute("id")}`);
                 }
             });
 
-
+            digitalSigManager.setDigitalSignatureInitRequestsData({
+                endpoint: () => { return `http://localhost:5288/api/digitalsig/init?username=${digitalSigManager.getRequiredInput().value}` },
+                data: () => {
+                    return {};
+                }
+            });
+            digitalSigManager.setDigitalSignatureCheckStatusRequestsData({
+                endpoint: () => { return `http://localhost:5288/api/digitalsig/check?requestCode=${requestCode}` },
+                data: () => {
+                    return {};
+                }
+            });
         });
     </script>
 

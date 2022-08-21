@@ -7,11 +7,15 @@
         FAILED
     End Enum
 
+    <Serializable()>
     Public Class DigitalSigResponse
         Public Property Status() As DigSigStatus
         Public Property RequestCode() As Integer
+
+        Public Property Description() As String
     End Class
 
+    <Serializable()>
     Public Class RequestCode
 
 
@@ -35,9 +39,12 @@
 
     End Class
 
-
+    <Serializable()>
     Public Class DigSigUser
+
         Public Property RequestCodes() As New List(Of RequestCode)
+
+        Public Property UserName() As String
 
         Public Function HasRequestCode(requestCode As Integer) As Boolean
             Return Me.RequestCodes.Any(Function(val) val.Code = requestCode)

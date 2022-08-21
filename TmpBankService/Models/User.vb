@@ -3,6 +3,8 @@ Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 
 Namespace Models
+
+    <Serializable()>
     Public Class User
 
         Public Const ANONYMOUS_USER_ID = -1

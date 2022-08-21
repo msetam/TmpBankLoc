@@ -13,7 +13,7 @@ Namespace Models
         SATNA
     End Enum
 
-
+    <Serializable()>
     Public Class Transaction
         <Key, ScaffoldColumn(False), DatabaseGenerated(DatabaseGeneratedOption.Identity)>
         Public Property TransactionId As Integer

@@ -2,8 +2,9 @@
 
 Public Class WebApiConfig
     Public Shared Sub Register(config As HttpConfiguration)
-        config.MapHttpAttributeRoutes()
         config.Routes.MapHttpRoute(name:="UserApi", routeTemplate:="api/{controller}/{id}",
                               defaults:=New With {.id = RouteParameter.Optional})
+        config.MapHttpAttributeRoutes()
+
     End Sub
 End Class

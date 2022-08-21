@@ -8,6 +8,8 @@ Namespace Models
         ADMIN
         ANONYMOUS
     End Enum
+
+    <Serializable()>
     Public Class Role
         <Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)>
         Public Property RoleId As Integer

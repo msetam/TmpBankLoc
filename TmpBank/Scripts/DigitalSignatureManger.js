@@ -177,7 +177,7 @@ var DigitalSignature;
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: function (response) {
-                    _this._requestCode = response.RequestCode;
+                    _this._requestCode = response.Code;
                     _this._authManagerListeners && typeof _this._authManagerListeners.onRequestTrackingDataReceived === 'function' && _this._authManagerListeners.onRequestTrackingDataReceived(response);
                     _this._checkRequestStatus();
                 },
@@ -231,6 +231,7 @@ var DigitalSignature;
                 dataType: "json",
                 success: function (response) {
                     if (response.Status == DigitalSignatureStatus.SUCCEEDED) {
+                        _this.enableWrapper();
                         _this._authManagerListeners && typeof _this._authManagerListeners.onSuccess === 'function' && _this._authManagerListeners.onSuccess(response);
                     }
                     else if (response.Status == DigitalSignatureStatus.FAILED || response.Status == DigitalSignatureStatus.TIMED_OUT) {
@@ -238,8 +239,8 @@ var DigitalSignature;
                         _this._authManagerListeners && typeof _this._authManagerListeners.onFailed === 'function' && _this._authManagerListeners.onFailed(response);
                     }
                     else {
-                        setTimeout(function () { _this._checkRequestStatus(); }, _this._interval);
                         _this._authManagerListeners && typeof _this._authManagerListeners.onCheckingRequestStatus === 'function' && _this._authManagerListeners.onCheckingRequestStatus(response.Status);
+                        setTimeout(function () { _this._checkRequestStatus(); }, _this._interval);
                     }
                 },
                 error: function (errors) {

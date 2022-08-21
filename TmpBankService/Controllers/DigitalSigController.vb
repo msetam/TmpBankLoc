@@ -73,21 +73,20 @@ Public Class DigitalSigController
     End Function
 
     Private Function _GetUser(username As String) As Models.DigSigUser
-        Dim user As Models.DigSigUser = HttpContext.Current.Session(DIGITAL_SIG_KEY)
-        If user IsNot Nothing Then
-            Return user
-        End If
         If username Is Nothing Then
-            Return Nothing
+            Dim user As Models.DigSigUser = HttpContext.Current.Session(DIGITAL_SIG_KEY)
+            If user IsNot Nothing Then
+                Return user
+            End If
         End If
         Using userActions As New TmpBankService.Logic.UserActions()
-            Dim result = userActions.FindUser(username, True)
+            Dim result = userActions.FindUser(username)
             If result IsNot Nothing Then
-                user = New Models.DigSigUser() With {.UserName = result.UserName}
+                Dim user = New Models.DigSigUser() With {.UserName = result.UserName}
                 HttpContext.Current.Session(DIGITAL_SIG_KEY) = user
                 Return user
             End If
-            Return Nothing
         End Using
+        Return Nothing
     End Function
 End Class

@@ -257,7 +257,7 @@ namespace DigitalSignature {
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: (response) => {
-                    this._requestCode = response.RequestCode;
+                    this._requestCode = response.Code;
                     this._authManagerListeners && typeof this._authManagerListeners.onRequestTrackingDataReceived === 'function' && this._authManagerListeners.onRequestTrackingDataReceived(response);
                     this._checkRequestStatus();
                 },
@@ -315,13 +315,14 @@ namespace DigitalSignature {
                 dataType: "json",
                 success: (response: any) => {
                     if (response.Status == DigitalSignatureStatus.SUCCEEDED) {
+                        this.enableWrapper();
                         this._authManagerListeners && typeof this._authManagerListeners.onSuccess === 'function' && this._authManagerListeners.onSuccess(response);
                     } else if (response.Status == DigitalSignatureStatus.FAILED || response.Status == DigitalSignatureStatus.TIMED_OUT) {
                         this.enableWrapper();
                         this._authManagerListeners && typeof this._authManagerListeners.onFailed === 'function' && this._authManagerListeners.onFailed(response);
                     } else {
-                        setTimeout(() => { this._checkRequestStatus(); }, this._interval);
                         this._authManagerListeners && typeof this._authManagerListeners.onCheckingRequestStatus === 'function' && this._authManagerListeners.onCheckingRequestStatus(response.Status)
+                        setTimeout(() => { this._checkRequestStatus(); }, this._interval);
                     }
                 },
                 error: (errors: any) => {

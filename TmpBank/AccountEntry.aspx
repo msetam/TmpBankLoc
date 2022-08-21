@@ -93,7 +93,7 @@
             const digitalSigManager = DigitalSignature.DigitalSignatureManager.getInstance("<%= DigSig_UC.Wrapper.ClientID%>");
             digitalSigManager.init();
 
-            let requestCode = -1;
+            let trackingDataResponse = null;
 
             digitalSigManager.setOnAuthEventsListener({
 
@@ -101,15 +101,16 @@
                     console.log("started");
 
                 },
-                onTrackingDataReceived: function (data) {
+                onRequestTrackingDataReceived: function (data) {
                     console.log(`tracking data recevied: ${JSON.stringify(data)}`);
-                    requestCode = data.RequestCode;
+                    trackingDataResponse = data;
                 },
                 onCheckingRequestStatus: function (data) {
                     console.log(`status receieved: ${JSON.stringify(data)}`);
                 },
                 onSuccess: function (data) {
                     console.log(`success: ${JSON.stringify(data)}`);
+                    setTimeout(() => { location.reload() }, 1500);
                 },
                 onFailed: function (data) {
                     console.log(`failed: ${JSON.stringify(data)}`);
@@ -126,7 +127,7 @@
                 }
             });
             digitalSigManager.setDigitalSignatureCheckStatusRequestsData({
-                endpoint: () => { return `http://localhost:5288/api/digitalsig/check?requestCode=${requestCode}` },
+                endpoint: () => { return `http://localhost:5288/api/digitalsig/check?requestCode=${trackingDataResponse.Code}` },
                 data: () => {
                     return {};
                 }

@@ -63,18 +63,18 @@ namespace AuthManagerControl {
 
                 const elementWrapper = this._digitalSigManager.getWrapperForElementWithClass(this._digitalSigManager.getRequiredInput()) as HTMLElement;
                 if (this._digitalSigManager.isDigSigMethodSelected()) {
-                    elementWrapper.classList.remove("ds-display-none");
+                    elementWrapper.classList.remove("am-display-none");
                 } else {
-                    elementWrapper.classList.add("ds-display-none");
+                    elementWrapper.classList.add("am-display-none");
                 }
 
             }
 
             for (const { input, wrapper } of this._digitalSigManager.getInputsAndWrappers()) {
                 if (this._digitalSigManager.isDigSigMethodSelected() && input !== this._digitalSigManager.getRequiredInput()) {
-                    wrapper.classList.add("ds-display-none");
+                    wrapper.classList.add("am-display-none");
                 } else {
-                    wrapper.classList.remove("ds-display-none");
+                    wrapper.classList.remove("am-display-none");
                 }
             }
 
@@ -86,9 +86,9 @@ namespace AuthManagerControl {
                 // so iterating over inputsnames enables it again
                 const elementWrapper = this._digitalSigManager.getWrapperForElementWithClass(this._digitalSigManager.getRequiredInput()) as HTMLElement;
                 if (this._digitalSigManager.isDigSigMethodSelected()) {
-                    elementWrapper.classList.remove("ds-display-none");
+                    elementWrapper.classList.remove("am-display-none");
                 } else {
-                    elementWrapper.classList.add("ds-display-none");
+                    elementWrapper.classList.add("am-display-none");
                 }
 
             }
@@ -220,7 +220,7 @@ namespace AuthManagerControl {
                 !this._isClassNameNull(this._targetAuthMethodWrapperClass) ?
                     this._targetAuthMethodWrapperClass + " input[type=radio]" :
                     "[dstargetauthmethod]") as HTMLInputElement;
-            this._allAuthMethodsWrapper = this.getWrapperForElementWithNodeName(this._targetAuthMethodRb, "fieldset") ?? this.getWrapperForElementWithClass(this._targetAuthMethodRb, "ds-wrapper");
+            this._allAuthMethodsWrapper = this.getWrapperForElementWithNodeName(this._targetAuthMethodRb, "fieldset") ?? this.getWrapperForElementWithClass(this._targetAuthMethodRb, "am-wrapper");
 
             this._setAuthMethodsRadioBtnListeners();
 
@@ -266,7 +266,7 @@ namespace AuthManagerControl {
                 }
             });
         }
-        // listens to changes in a wrapper that is the closest ancestor with a node.type=fieldset and if that doesn't exist, it will search for the closest ancestor with className="ds-wrapper"
+        // listens to changes in a wrapper that is the closest ancestor with a node.type=fieldset and if that doesn't exist, it will search for the closest ancestor with className="am-wrapper"
         private _setAuthMethodsRadioBtnListeners() {
             if (!this._targetAuthMethodRb) {
                 return
@@ -341,8 +341,8 @@ namespace AuthManagerControl {
             this._onAuthMethodMethodChangedEvent = listener;
         }
 
-        // goes up the DOM heierachy till it hits a class with ds-wrapper class or reaches wrapper element
-        public getWrapperForElementWithClass(element: HTMLElement, className: string = "ds-wrapper"): HTMLElement {
+        // goes up the DOM heierachy till it hits a class with am-wrapper class or reaches wrapper element
+        public getWrapperForElementWithClass(element: HTMLElement, className: string = "am-wrapper"): HTMLElement {
             if (!element) {
                 throw new Error(`element searching for ${className} does not exist. you may have wrong referenced/template structure`);
             }
@@ -350,7 +350,7 @@ namespace AuthManagerControl {
             while (result && result != this._wrapper && !result.classList.contains(className)) {
                 result = result.parentElement;
             }
-            if (!result || !result.classList.contains("ds-wrapper")) {
+            if (!result || !result.classList.contains("am-wrapper")) {
                 throw new Error(`${className} class on any of ancestors of this element is expected: ${element}`);
             }
             return result;

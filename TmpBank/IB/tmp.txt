@@ -1,0 +1,54 @@
+
+NOTES:
+	1- 127.122.844.0 -> test env
+
+	2- test users:
+		1- vahid1: 1234Qwer
+		2- tt
+	3- aspnet_regsql.exe -S pc-m-setayesh-m\TESTSERVERLOC -d TmpBankState -ssadd -E -sstype c
+
+
+	4- how to unbind TFS from project
+		.vspscc
+		.vssscc
+		delete GlobalSection(TeamFoundationVersionControl) tag in .sln
+
+	5- adding .ts file proccess
+		1- adding first ts file by using newitem 
+		2- a prompt to install Microsoft.TypeScript.MSBuild NuGet package.
+		3- set buildaction of file to TypeScriptCompile if not done automatically
+		4- thats it :|
+
+
+
+
+TODO: 
+	1- USE babel later to traspile es6 js to es5 and *write down the steps as well
+	2- DEBUG preprocessor exported value
+
+	3- this impl is prone to bugs because there might be listeners added using addEventListener and they are before the addListener of our submit
+
+	4- feature list in imlp docs
+
+	5- features:
+		AuthManagerControl:
+			1- postBack sets the arg to -> current auth method type
+			2- Container is gonna have templates as well as :GoogleAuth, DigitalSig(can have two methods itself), UserPass ... 
+
+
+	6- known bugs:
+		AuthManagerControl:
+			1- fix GetPostBackEventArgumnetFor in BasePage
+			2- fix perFormPostBack(...) in script1.js
+	7- bug candidates:
+		AuthManagerControl:
+			1- in setupAuthMethods check if getControlWith* finds nothing what does it return, and if retuns an empty resultset then what resultset.Select() returns.
+				Does it crash? * based on the result of research (code might change but its in _SetupAuthMethods):
+					 change the result = _validateAuthMethods(container, AuthManagerUtils.TagNames.GOOGLE_AUTH + "AuthMethod", DigitalSigAuthMethodWrapperClass) 
+					 	if result isnot nothing to [NEW CODE: resuls.count <> 0]
+
+CURRENT TASKS:
+
+	1- AuthManagerControl: validating the existance of templates is done through one function which we call multiple times 
+	2- AuthManagerControl: different classes that handle auth method : client side
+	3- AuthManagerControl: no more DSTargetAuthMethod -> maybe abstracing away how these things are checked 

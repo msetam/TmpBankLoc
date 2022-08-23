@@ -1,39 +1,45 @@
 ﻿Imports System.ComponentModel
 Imports EndUserWebSite.Utils
 
-
+' AM[Name]AuthMethod, if this auth method has a RequiredInput attribute as well then the corresponding AM[Name]InputView MUST exist
+' AM[Name]InputView
 Namespace Controls
+    Namespace AuthManagerUtils
+        Public Enum Action
+            DISABLE = 0
+            HIDE ' if action is set to HIDE use -wrapper class on whoever is wrapping your INPUT elements
+            NONE
+        End Enum
 
-    Public Enum Action
-        DISABLE = 0
-        HIDE ' if action is set to HIDE use -wrapper class on whoever is wrapping your INPUT elements
-        NONE
-    End Enum
+        Public Module TagNames
+            Public GOOGLE_AUTH = "AMGoogleAuth"
+            Public DIGITAL_SIGNATURE = "AMDigitalSig"
+            Public PASSWORD = "AMPassword"
+        End Module
 
-    Public Class CustomMarkupContainer
-        Inherits UserControl
+        Public Class CustomMarkupContainer
+            Inherits UserControl
 
-        Public Property BindingTest() As Integer
+            Public Property BindingTest() As Integer
 
-        Friend Sub New(ByVal randomTest As Integer)
-            Me.BindingTest = randomTest
-            Debug.WriteLine("Container Initialized")
-        End Sub
+            Public Sub New(ByVal randomTest As Integer)
+                Me.BindingTest = randomTest
+                Debug.WriteLine("Container Initialized")
+            End Sub
+        End Class
 
+        Public Class SubmitEventArgs
+            Inherits EventArgs
 
-    End Class
+            Public Property IsDigSigMethodSelected() As Boolean
 
+            Public Sub New(isDigSigMethodSelected As Boolean)
+                Me.IsDigSigMethodSelected = isDigSigMethodSelected
+            End Sub
 
-    Public Class SubmitEventArgs
-        Inherits EventArgs
+        End Class
+    End Namespace
 
-        Public Property IsDigSigMethodSelected() As Boolean
-
-        Public Sub New(isDigSigMethodSelected As Boolean)
-            Me.IsDigSigMethodSelected = isDigSigMethodSelected
-        End Sub
-
-    End Class
 
     ' The order in which the inputs for our script is defined:
     '   1- template
@@ -51,27 +57,31 @@ Namespace Controls
         ' we render it into our template hence then need for WrappingPanel.
         Public Property WrappingPanel() As Panel
         Public Property Interval() As Integer
-        Public Property Action() As Action = Action.DISABLE
+        Public Property Action() As AuthManagerUtils.Action = AuthManagerUtils.Action.DISABLE
         Public Property Wrapper() As Control
 
         ' if outside of control and within the wrapper you had put SubmitView attribute
         Public Property HasReferencedInputs() As Boolean = False
 
         ' if outside of control and within the wrapper you had put TargetAuthMethod attribute and
-        ' a ds-wrapper on all of Auth methods radio buttons wrapper
+        ' a am-wrapper on all of Auth methods radio buttons wrapper
         Public Property HasReferencedAuthMethods() As Boolean = False
 
         ' if outside of control and within the wrapper you had put RequiredInput or InputView attributes
         Public Property HasReferencedSubmitButton() As Boolean = False
 
-        ' if the server already knows the required input then we can simply omit the input from client
-        Public Property HasRequiredInput() As Boolean = False
-
-
         ' use these properties if you are using a control that generates multiple elements and setting attributes won't work
-        Public Property InputsWrapperClass() As String = "-null-"
-        Public Property TargetAuthMethodWrapperClass() As String = "-null-"
-        Public Property RequiredInputWrapperClass() As String = "-null-"
+        '   INPUTS:
+        Public Property InputsWrapperClass() As String = "-null-"  ' used for other input methods that are within the same wrapper as other inputs but they are not related to them in any way, we apply [Action.HIDE,..] when auth method changes
+        Public Property PasswordInputWrapperClass() As String = "-null-"
+        Public Property DigitalSigInputWrapperClass() As String = "-null-"
+        Public Property GoogleAuthInputWrapper() As String = "-null-"
+
+        '    AUTH METHODS:
+        Public Property AuthMethodsWrapperClass() As String = "-null-"
+        Public Property PasswordAuthMethodWrapperClass() As String = "-null-"
+        Public Property DigitalSigAuthMethodWrapperClass() As String = "-null-"
+        Public Property GoogleAuthMethodWrapper() As String = "-null-"
         Public Property SubmitWrapperClass() As String = "-null-"
 
         ' If you are referencing a custom user control then your classes could probably use a property that AuthManager is not aware of(we search for CssClass or a property starting with Css), if that's the case
@@ -98,66 +108,67 @@ Namespace Controls
             RemoveHandler(value As EventHandler)
                 CustomEvents.RemoveHandler(_DIGITAL_SIG_SUBMIT_EVENT_NAME, value)
             End RemoveHandler
-            RaiseEvent(sender As Object, e As SubmitEventArgs)
+            RaiseEvent(sender As Object, e As AuthManagerUtils.SubmitEventArgs)
                 DirectCast(CustomEvents(_DIGITAL_SIG_SUBMIT_EVENT_NAME), EventHandler)?.Invoke(sender, e)
             End RaiseEvent
         End Event
 
 
-        Dim WithEvents _container As New CustomMarkupContainer(2)
+        Dim WithEvents _container As New AuthManagerUtils.CustomMarkupContainer(2)
 
         ' Custom Templates
-        <TemplateContainer(GetType(CustomMarkupContainer))>
+        <TemplateContainer(GetType(AuthManagerUtils.CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
         <Browsable(False)>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property HeaderMarkupTemplate() As ITemplate
 
-        ' Must include an element that has a DSTargetAuthMethod attribute or a css class with value = TargetAuthMethodWrapperClass
-        ' also add a ds-wrapper class or a fieldset to whoever is wrapping all auth methods radio buttons
-        <TemplateContainer(GetType(CustomMarkupContainer))>
+        ' Must include an element that has a AMTargetAuthMethod attribute or a css class with value = TargetAuthMethodWrapperClass
+        ' also add a am-wrapper class or a fieldset to whoever is wrapping all auth methods radio buttons
+        <TemplateContainer(GetType(AuthManagerUtils.CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
         <Browsable(False)>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property AuthMethodsTemplate() As ITemplate
 
-        ' Inlcudes all of the inputs for our control(except submit) which should be flagged with DSInputView or a css class with value = InputsWrapperClass
-        ' If it has a required input then it should be flaged with adding a DSRequiredInput attribute(InputView is optional) or a css class with value = RequiredInputWrapperClass
-        <TemplateContainer(GetType(CustomMarkupContainer))>
+        ' Inlcudes all of the inputs for our control(except submit) which should be flagged with AMInputView or a css class with value = InputsWrapperClass
+        ' If it has a required input then it should be flaged with adding a AMRequiredInput attribute(InputView is optional) or a css class with value = RequiredInputWrapperClass
+        <TemplateContainer(GetType(AuthManagerUtils.CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
         <Browsable(False)>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property InputsTemplate() As ITemplate
 
 
-        ' Must include an element thas DSSubmitView attribute or a css class with value = SubmitButtonWrapperClass
-        <TemplateContainer(GetType(CustomMarkupContainer))>
+        ' Must include an element thas AMSubmitView attribute or a css class with value = SubmitButtonWrapperClass
+        <TemplateContainer(GetType(AuthManagerUtils.CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
         <Browsable(False)>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property SubmitTemplate() As ITemplate
 
-        <TemplateContainer(GetType(CustomMarkupContainer))>
+        <TemplateContainer(GetType(AuthManagerUtils.CustomMarkupContainer))>
         <TemplateInstance(TemplateInstance.Single)>
         <Browsable(False)>
         <PersistenceMode(PersistenceMode.InnerProperty)>
         Public Property FooterMarkupTemplate() As ITemplate
 
         Protected Sub Control_Init() Handles Me.Init
+            DataBind()
+        End Sub
 
+
+        Protected Sub Control_Load() Handles Me.Load
             If IsPostBack Then
                 Dim eventTarget As String = Request("__EVENTTARGET")
                 If Not String.IsNullOrEmpty(eventTarget) AndAlso eventTarget = AuthManagerWrapper_DIV.ClientID Then
                     Dim isDigitalSigMethodSelected = BasePage.GetPostBackEventArgumnetFor("selectedAuthMethodName")
                     If isDigitalSigMethodSelected IsNot Nothing Then
-                        RaiseEvent Submit(Me, New SubmitEventArgs(isDigitalSigMethodSelected = "true"))
+                        RaiseEvent Submit(Me, New AuthManagerUtils.SubmitEventArgs(isDigitalSigMethodSelected = "true"))
                     End If
                 End If
             End If
-
-            DataBind()
         End Sub
-
 
         Protected Overrides Sub OnDataBinding(e As EventArgs)
             MyBase.OnDataBinding(e)
@@ -166,10 +177,6 @@ Namespace Controls
                 DefaultInputsMarkup.Visible = False
                 DefaultAuthMethodsMarkup.Visible = False
                 Submit_BTN.Visible = False
-            End If
-
-            If RequiredInputWrapperClass <> "-null-" Then
-                HasRequiredInput = True
             End If
 
             AuthManagerWrapper_DIV.Attributes("class") = AuthManagerWrapper_DIV.Attributes("class") + " " + CssClass
@@ -188,9 +195,8 @@ Namespace Controls
                                         ""{Wrapper.ClientID}"", 
                                         {Interval},
                                         {DirectCast(Action, Integer)}, 
-                                        {If(HasRequiredInput, "true", "false")},
-                                        "".{TargetAuthMethodWrapperClass}"",
-                                        "".{InputsWrapperClass},.{RequiredInputWrapperClass}"",
+                                        "".{PasswordAuthMethodWrapperClass},.{DigitalSigAuthMethodWrapperClass},.{GoogleAuthMethodWrapper}"",
+                                        "".{PasswordInputWrapperClass},.{DigitalSigInputWrapperClass},.{GoogleAuthInputWrapper}"",
                                         "".{SubmitWrapperClass}""
                                     );
                          </script>"
@@ -223,78 +229,40 @@ Namespace Controls
         End Sub
 
 
-        Private Sub _SetupHeader(container As CustomMarkupContainer)
+        Private Sub _SetupHeader(container As AuthManagerUtils.CustomMarkupContainer)
 
         End Sub
 
-        Private Sub _SetupAuthMethods(container As CustomMarkupContainer)
+        ' returns [HasPasswordAuthMethod, HasDigitalSigAuthMethod, HasGoogleAuthMethod]
+        Private Function _SetupAuthMethods(container As AuthManagerUtils.CustomMarkupContainer) As Boolean()
+            If Constants.IsDebugMode Then
+                Dim result = {False, False, False}
 
-            If HasReferencedAuthMethods Or AuthMethodsTemplate IsNot Nothing Then
-                DefaultAuthMethodsMarkup.Visible = False
-                If Constants.IsDebugMode Then
+                result(0) = _validateAuthMethods(container, AuthManagerUtils.TagNames.PASSWORD + "AuthMethod", DigitalSigAuthMethodWrapperClass) IsNot Nothing OrElse Not _IsClassNameNull(PasswordAuthMethodWrapperClass)
+                result(1) = _validateAuthMethods(container, AuthManagerUtils.TagNames.DIGITAL_SIGNATURE + "AuthMethod", DigitalSigAuthMethodWrapperClass) IsNot Nothing OrElse Not _IsClassNameNull(DigitalSigAuthMethodWrapperClass)
+                result(2) = _validateAuthMethods(container, AuthManagerUtils.TagNames.GOOGLE_AUTH + "AuthMethod", DigitalSigAuthMethodWrapperClass) IsNot Nothing OrElse Not _IsClassNameNull(GoogleAuthMethodWrapper)
 
-                    Dim wrapper = If(HasReferencedAuthMethods, Me.Wrapper, container)
-                    ' checking target auth method
-                    If _IsClassNameNull(TargetAuthMethodWrapperClass) Then
-                        Dim targetAuthMethods As Utils.ControlWithAttribute() = _GetControlsWithAttribute(wrapper, "DSTargetAuthMethod", stopOnFirstHit:=True)
-                        If targetAuthMethods.Count <> 1 Then
-                            ThrowAttrExpectedException("DSTargetAuthMethod", "AuthMethodsTemplate/Wrapper")
-                        End If
-                    ElseIf Not SkipClassChecks Then
-                        Dim targetAuthMethods As Utils.ControlWithAttributesAndCss() = _GetControlsWithClass(wrapper, TargetAuthMethodWrapperClass, True)
-                        If targetAuthMethods.Count <> 1 Then
-                            ThrowAttrExpectedException($"CssClass with value = {TargetAuthMethodWrapperClass}", wrapper.ClientID)
-                        End If
-                    End If
-
-                End If
-
+                Return result
             End If
-        End Sub
+            Return {False, False, False}
+        End Function
 
-        ' Todo: test if its htmlcontrol with no id set we can still access UniqueID and it exists
-
-        Private Sub _SetupInputs(container As CustomMarkupContainer)
-            _validateTemplate(DefaultInputsMarkup, container, InputsTemplate, RequiredInputWrapperClass, HasReferencedInputs, "DSRequiredInput", 1)
-            If HasReferencedInputs Or InputsTemplate IsNot Nothing Then
-                DefaultInputsMarkup.Visible = False
-                If Constants.IsDebugMode Then
-                    Dim wrapper = If(HasReferencedInputs, Me.Wrapper, container)
-                    ' required input
-                    ' other inputs are optional so no checks for them unless we have defined InputsWrapperClass
-                    If _IsClassNameNull(RequiredInputWrapperClass) Then
-                        Dim requiredInputsArr As Utils.ControlWithAttribute() = _GetControlsWithAttribute(wrapper, "DSRequiredInput", stopOnFirstHit:=True)
-                        If HasRequiredInput AndAlso requiredInputsArr.Count <> 1 Then
-                            ThrowAttrExpectedException("DSRequiredInput", "InputsTemplate/Wrapper")
-                        End If
-                    ElseIf Not SkipClassChecks Then
-                        Dim inputsArr As Utils.ControlWithAttributesAndCss() = _GetControlsWithClass(wrapper, RequiredInputWrapperClass, True)
-                        If HasRequiredInput AndAlso inputsArr.Count <> 1 Then
-                            ThrowAttrExpectedException($"CssClass with value = {RequiredInputWrapperClass}", wrapper.ClientID)
-                        End If
-                    End If
-
-                    ' defined InputsWrapperClass checks
-                    If Not SkipClassChecks AndAlso Not _IsClassNameNull(InputsWrapperClass) Then
-                        Dim inputsArr As Utils.ControlWithAttributesAndCss() = _GetControlsWithClass(wrapper, InputsWrapperClass, True)
-                        If inputsArr.Count = 0 Then
-                            ThrowAttrExpectedException($"CssClass with value = {InputsWrapperClass}", wrapper.ClientID)
-                        End If
-                    End If
-                End If
-            Else
-                RequiredInputWrapperClass = "ds-required-input-wrapper"
-                InputsWrapperClass = "ds-inputs-wrapper"
+        ' TODO: test if its htmlcontrol with no id set we can still access UniqueID and it exists
+        Private Sub _SetupInputs(container As AuthManagerUtils.CustomMarkupContainer, authMethodsExistanceState As Boolean())
+            If Constants.IsDebugMode Then
+                _validateTemplate(DefaultInputsMarkup, container, InputsTemplate, InputsWrapperClass, HasReferencedInputs, "AMInputView", Function(numberOfControls) True)
             End If
-
+            If Not HasReferencedInputs AndAlso InputsTemplate Is Nothing Then
+                InputsWrapperClass = "am-inputs-wrapper"
+            End If
         End Sub
 
         ' wires up Submit event and creates SubmitTemplate if exists
-        Private Sub _SetupSubmitButton(container As CustomMarkupContainer)
-            Dim controlResult = _validateTemplate(Submit_BTN, container, SubmitTemplate, SubmitWrapperClass, HasReferencedSubmitButton, "DSSubmitView", Function(numberOfElements) numberOfElements = 1)
+        Private Sub _SetupSubmitButton(container As AuthManagerUtils.CustomMarkupContainer)
+            Dim controlResult = _validateTemplate(Submit_BTN, container, SubmitTemplate, SubmitWrapperClass, HasReferencedSubmitButton, "AMSubmitView", Function(numberOfControls) numberOfControls = 1)
             Dim targetBtn As Button = Submit_BTN
             If controlResult IsNot Nothing Then
-                targetBtn = controlResult(0)
+                targetBtn = controlResult(0).Control
             End If
             AddHandler targetBtn.Click, AddressOf SubmitBtn_Click
             If WrappingPanel IsNot Nothing Then
@@ -302,39 +270,48 @@ Namespace Controls
             End If
         End Sub
 
-        Private Sub _SetupFooter(container As CustomMarkupContainer)
+        Private Sub _SetupFooter(container As AuthManagerUtils.CustomMarkupContainer)
 
         End Sub
 
         ' use @Param defaultMarkupSetup when you need to to some setups if there no referenced nor templated views (or in other words we fallback to default template)
         ' returns the controls that it found during validation process,
         ' ******** IMPORTANT: if validation is skipped during Production env then it will return Nothing
-        Private Function _validateTemplate(defaultMarkupView As Control, container As CustomMarkupContainer, template As ITemplate,
+        Private Function _validateTemplate(defaultMarkupView As Control, container As AuthManagerUtils.CustomMarkupContainer, template As ITemplate,
                                            wrapperClass As String, hasReferencedView As Boolean, tagName As String,
-                                           isNumberOfElementsValid As Func(Of Integer, Boolean),
+                                           isNumberOfControlsValid As Func(Of Integer, Boolean),
                                            Optional defaultMarkpSetup As System.Action = Nothing,
                                            Optional stopOnFirstHit As Boolean = True,
-                                           Optional validateOnlyOnDebug As Boolean = True) As Control()
-            Dim controlsArr As Control() = Nothing
+                                           Optional getControlWithAttributesFunc As Func(Of Control, String, Boolean, ControlWithAttribute()) = Nothing,
+                                           Optional getControlWithClassFunc As Func(Of Control, String, Boolean, ControlWithAttribute()) = Nothing) As ControlWithAttributesAndCss()
+
+            ' if not custom control finders are defined then we set the default control finders
+            If getControlWithAttributesFunc Is Nothing Then
+                getControlWithAttributesFunc = AddressOf _GetControlsWithAttribute
+            End If
+            If getControlWithClassFunc Is Nothing Then
+                getControlWithClassFunc = AddressOf _GetControlsWithClass
+            End If
+
+
+            Dim controlsArr As ControlWithAttributesAndCss() = Nothing
             If hasReferencedView OrElse template IsNot Nothing Then
                 defaultMarkupView.Visible = False
-                If Not validateOnlyOnDebug OrElse Constants.IsDebugMode Then
-                    Dim wrapper = If(hasReferencedView, Me.Wrapper, container)
-                    ' required input
-                    ' other inputs are optional so no checks for them unless we have defined InputsWrapperClass
-                    If _IsClassNameNull(wrapperClass) Then
-                        Dim controlsWithAttrArr As Utils.ControlWithAttribute() = _GetControlsWithAttribute(wrapper, tagName, stopOnFirstHit:=stopOnFirstHit)
-                        If hasReferencedView AndAlso isNumberOfElementsValid(controlsWithAttrArr.Count) Then
-                            ThrowAttrExpectedException(tagName, $"{template.GetType().Name}/Wrapper")
-                        End If
-                        controlsArr = controlsWithAttrArr.Select(Of Control)(Function(controlWithAttr) controlWithAttr.Control)
-                    ElseIf Not SkipClassChecks Then
-                        Dim controlsWithCssArr As Utils.ControlWithAttributesAndCss() = _GetControlsWithClass(wrapper, wrapperClass, stopOnFirstHit)
-                        If hasReferencedView AndAlso isNumberOfElementsValid(controlsWithCssArr.Count) Then
-                            ThrowAttrExpectedException($"CssClass with value = {wrapperClass}", wrapper.ClientID)
-                        End If
-                        controlsArr = controlsWithCssArr.Select(Of Control)(Function(controlWithClass) controlWithClass.Control)
+                Dim wrapper = If(hasReferencedView, Me.Wrapper, container)
+                ' required input
+                ' other inputs are optional so no checks for them unless we have defined InputsWrapperClass
+                If _IsClassNameNull(wrapperClass) Then
+                    Dim controlsWithAttrArr As Utils.ControlWithAttribute() = getControlWithAttributesFunc(wrapper, tagName, stopOnFirstHit)
+                    If hasReferencedView AndAlso isNumberOfControlsValid(controlsWithAttrArr.Count) Then
+                        ThrowAttrExpectedException(tagName, $"{template.GetType().Name}/Wrapper")
                     End If
+                    controlsArr = controlsWithAttrArr.Select(Of Control)(Function(controlWithAttr) controlWithAttr.Control)
+                ElseIf Not SkipClassChecks Then
+                    Dim controlsWithCssArr As Utils.ControlWithAttributesAndCss() = getControlWithClassFunc(wrapper, wrapperClass, stopOnFirstHit)
+                    If hasReferencedView AndAlso isNumberOfControlsValid(controlsWithCssArr.Count) Then
+                        ThrowAttrExpectedException($"CssClass with value = {wrapperClass}", wrapper.ClientID)
+                    End If
+                    controlsArr = controlsWithCssArr.Select(Of Control)(Function(controlWithClass) controlWithClass.Control)
                 End If
             Else
                 defaultMarkpSetup?()
@@ -342,11 +319,27 @@ Namespace Controls
             Return controlsArr
         End Function
 
-        Private Sub CustomMarkupContainer_Init(container As CustomMarkupContainer, e As EventArgs) Handles _container.Init
+        Private Function _validateAuthMethods(container As AuthManagerUtils.CustomMarkupContainer, tagName As String, cssWrapperClass As String) As ControlWithAttributesAndCss()
+            Return _validateTemplate(DefaultAuthMethodsMarkup, container, AuthMethodsTemplate, cssWrapperClass,
+                                                          HasReferencedAuthMethods, Nothing,
+                                                          Function(numberOfControls) True,
+                                                          getControlWithAttributesFunc:=Function(wrapper As Control, __tag As String, stopOnFirstHit As Boolean)
+                                                                                            Return wrapper.FindControlsByAttribute(Function(ctrlWithAttr)
+                                                                                                                                       For Each key In ctrlWithAttr.Attributes.Keys
+                                                                                                                                           If key.ToString() = tagName Then
+                                                                                                                                               Return True
+                                                                                                                                           End If
+                                                                                                                                       Next
+                                                                                                                                       Return False
+                                                                                                                                   End Function)
+                                                                                        End Function)
+        End Function
+
+        Private Sub CustomMarkupContainer_Init(container As AuthManagerUtils.CustomMarkupContainer, e As EventArgs) Handles _container.Init
             _SetupHeader(container)
-            _SetupInputs(container)
+            Dim authMethodsExistanceState = _SetupAuthMethods(container)
+            _SetupInputs(container, authMethodsExistanceState)
             _SetupSubmitButton(container)
-            _SetupAuthMethods(container)
             _SetupFooter(container)
 
             ' we set javascript after CustomMarkupContainer_Init because only then we have access to our templated element ids
@@ -358,7 +351,7 @@ Namespace Controls
         End Sub
 
         Private Sub SubmitBtn_Click()
-            RaiseEvent Submit(Me, New SubmitEventArgs(False))
+            RaiseEvent Submit(Me, New AuthManagerUtils.SubmitEventArgs(False))
         End Sub
 
 
@@ -368,16 +361,16 @@ Namespace Controls
 
 
 
-        Private Function _GetControlsWithAttribute(wrapper As Control, attributeName As String, stopOnFirstHit As Boolean) As Utils.ControlWithAttribute()
-            Return wrapper.FindControlByAttribute(Function(controlWithAttribute)
-                                                      Return controlWithAttribute.Attributes(DEFAULT_MARKUP_ATTRIBUTE_NAME) Is Nothing AndAlso controlWithAttribute.Attributes(attributeName) IsNot Nothing
-                                                  End Function,
+        Private Shared Function _GetControlsWithAttribute(wrapper As Control, attributeName As String, stopOnFirstHit As Boolean) As Utils.ControlWithAttribute()
+            Return wrapper.FindControlsByAttribute(Function(controlWithAttribute)
+                                                       Return controlWithAttribute.Attributes(DEFAULT_MARKUP_ATTRIBUTE_NAME) Is Nothing AndAlso controlWithAttribute.Attributes(attributeName) IsNot Nothing
+                                                   End Function,
                                                   stopOnFirstHit:=stopOnFirstHit).ToArray()
         End Function
-        Private Function _GetControlsWithClass(wrapper As Control, className As String, stopOnFirstHit As Boolean) As Utils.ControlWithAttributesAndCss()
-            Return wrapper.FindControlByClass(Function(controlWithClass)
-                                                  Return controlWithClass.Attributes?(DEFAULT_MARKUP_ATTRIBUTE_NAME) Is Nothing AndAlso controlWithClass.Css.Contains(className)
-                                              End Function,
+        Private Shared Function _GetControlsWithClass(wrapper As Control, className As String, stopOnFirstHit As Boolean) As Utils.ControlWithAttributesAndCss()
+            Return wrapper.FindControlsByClass(Function(controlWithClass)
+                                                   Return controlWithClass.Attributes?(DEFAULT_MARKUP_ATTRIBUTE_NAME) Is Nothing AndAlso controlWithClass.Css.Contains(className)
+                                               End Function,
                                               stopOnFirstHit:=stopOnFirstHit).ToArray()
         End Function
 

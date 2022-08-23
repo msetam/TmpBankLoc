@@ -60,7 +60,7 @@ Namespace Pages
 
         Private Sub _Login() Handles DigSig_UC.Submit ' or LoginBtn_View.Click
             Dim loginResult As String = ""
-            If Not ValidateInputStringExists("UserNameL", UserNameLogin_View.Value, loginResult) OrElse
+            wIf Not ValidateInputStringExists("UserNameL", UserNameLogin_View.Value, loginResult) OrElse
                 Not ValidateInputStringExists("PassowordL", PasswordLogin_View.Value, loginResult) Then
                 SetLoginValidationStatus(loginResult)
                 Return
